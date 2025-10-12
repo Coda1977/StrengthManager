@@ -564,6 +564,7 @@ footer {
   outline: none;
   border-color: var(--accent-blue);
   box-shadow: 0 0 0 3px rgba(0, 53, 102, 0.1);
+}
 
 /* Domain Chart Styles */
 .domain-chart {
@@ -603,6 +604,105 @@ footer {
   overflow: hidden;
 }
 
+/* Insights Section Styles */
+.insight-section {
+  margin-bottom: var(--content-padding);
+}
+
+.insight-box {
+  background: var(--bg-primary);
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 1rem;
+}
+
+.insight-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.insight-title {
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.refresh-btn {
+  background: var(--accent-blue);
+  color: var(--white);
+  border: none;
+  padding: var(--btn-padding-sm);
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 53, 102, 0.3);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.insight-text {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+.collaboration-section {
+  margin-top: var(--content-padding);
+}
+
+.collaboration-prompt {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 16px;
+}
+
+.selected-members {
+  background: var(--accent-yellow);
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.member-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.member-btn {
+  background: var(--bg-primary);
+  border: 2px solid transparent;
+  padding: var(--btn-padding-md);
+  border-radius: var(--btn-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.member-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.member-btn.selected {
+  background: var(--accent-yellow);
+  border-color: var(--accent-blue);
+  transform: scale(1.05);
+}
+
 .bar-fill {
   height: 100%;
   border-radius: 4px;
@@ -613,8 +713,6 @@ footer {
 .bar-fill.influencing { background: var(--influencing); }
 .bar-fill.relationship-building { background: var(--relationship); }
 .bar-fill.strategic-thinking { background: var(--strategic); }
-
-}
 
 /* Animations */
 @keyframes fadeInUp {
@@ -633,8 +731,20 @@ footer {
 }
 
 @keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
   }
 }
 
@@ -659,5 +769,23 @@ footer {
   
   .team-grid {
     grid-template-columns: 1fr;
+  }
+  
+  /* Navigation Mobile */
+  .nav-links {
+    display: none !important;
+  }
+  
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+  
+  /* AI Chat Mobile */
+  .chat-container {
+    padding: 1rem !important;
+  }
+  
+  .chat-header h2 {
+    font-size: 18px !important;
   }
 }

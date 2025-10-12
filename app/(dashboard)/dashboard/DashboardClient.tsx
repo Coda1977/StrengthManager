@@ -3,6 +3,9 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ALL_STRENGTHS as ALL_STRENGTHS_MAP, getStrengthDomain } from '@/lib/utils/strengths';
+import { strengthsData, StrengthData } from '@/lib/utils/strengthsData';
+import StrengthModal from '@/components/StrengthModal';
+import BulkUploadModal from '@/components/BulkUploadModal';
 
 const ALL_STRENGTHS = Object.keys(ALL_STRENGTHS_MAP).sort();
 const STRENGTHS_DOMAIN_MAP = ALL_STRENGTHS_MAP;
@@ -47,6 +50,20 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
   const [modalOpen, setModalOpen] = useState(false);
   const [editStrengths, setEditStrengths] = useState<string[]>(initialUserData.top_5_strengths || []);
   const [saving, setSaving] = useState(false);
+  
+  // AI Insights state
+  const [teamInsight, setTeamInsight] = useState<string>('');
+  const [collaborationInsight, setCollaborationInsight] = useState<string>('');
+  const [loadingTeamInsight, setLoadingTeamInsight] = useState(false);
+  const [loadingCollabInsight, setLoadingCollabInsight] = useState(false);
+  const [selectedMember1, setSelectedMember1] = useState<string>('');
+  const [selectedMember2, setSelectedMember2] = useState<string>('');
+  
+  // Strength encyclopedia modal state
+  const [viewingStrength, setViewingStrength] = useState<{ name: string } & StrengthData | null>(null);
+  
+  // Bulk upload modal state
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
 
   const filteredStrengths = useMemo(() => {
     if (!searchTerm.trim()) return ALL_STRENGTHS;
@@ -211,6 +228,91 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
   };
 
   const domainDistribution = calculateDomainDistribution();
+  
+  // Generate team insight
+  const generateTeamInsight = async () => {
+    setLoadingTeamInsight(true);
+    try {
+      const response = await fetch('/api/generate-team-insight', {
+        method: 'POST',
+      });
+      
+      if (!response.ok) throw new Error('Failed to generate insight');
+      
+      const data = await response.json();
+      setTeamInsight(data.insight);
+    } catch (error) {
+      console.error('Error generating team insight:', error);
+      setTeamInsight('Unable to generate insight at this time. Please try again.');
+    } finally {
+      setLoadingTeamInsight(false);
+    }
+  };
+  
+  // Generate collaboration insight
+  const generateCollaborationInsight = async () => {
+    if (!selectedMember1 || !selectedMember2) {
+      alert('Please select two team members');
+      return;
+    }
+    
+    setLoadingCollabInsight(true);
+    try {
+      const response = await fetch('/api/generate-collaboration-insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          member1: selectedMember1,
+          member2: selectedMember2
+        }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to generate collaboration insight');
+      
+      const data = await response.json();
+      setCollaborationInsight(data.insight);
+    } catch (error) {
+      console.error('Error generating collaboration insight:', error);
+      setCollaborationInsight('Unable to generate collaboration insight at this time. Please try again.');
+    } finally {
+      setLoadingCollabInsight(false);
+    }
+  };
+  
+  // Get all members including user
+  const allMembers = [
+    { name: 'You', strengths: initialUserData.top_5_strengths },
+    ...teamMembers.map(m => ({ name: m.name, strengths: m.strengths }))
+  ];
+  
+  // Handle strength click to show encyclopedia modal
+  const handleStrengthClick = (strengthName: string) => {
+    const strengthInfo = strengthsData[strengthName];
+    if (strengthInfo) {
+      setViewingStrength({ name: strengthName, ...strengthInfo });
+    }
+  };
+  
+  // Handle bulk upload
+  const handleBulkUpload = async (members: Array<{ name: string; strengths: string[] }>) => {
+    try {
+      // Add all members in parallel
+      const promises = members.map(member =>
+        fetch('/api/team-members', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: member.name, strengths: member.strengths }),
+        }).then(res => res.json())
+      );
+      
+      const newMembers = await Promise.all(promises);
+      setTeamMembers([...teamMembers, ...newMembers]);
+      setShowBulkUpload(false);
+    } catch (error) {
+      console.error('Error bulk uploading team members:', error);
+      throw error;
+    }
+  };
 
   return (
     <div className="dashboard">
@@ -234,6 +336,7 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
               initialUserData.top_5_strengths.slice(0, 5).map((strength: string) => (
                 <span
                   key={strength}
+                  onClick={() => handleStrengthClick(strength)}
                   style={{
                     background: '#FFD600',
                     color: '#181818',
@@ -243,6 +346,15 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
                     padding: '0.5rem 1.5rem',
                     display: 'inline-block',
                     cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 214, 0, 0.3)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
                   {strength}
@@ -283,7 +395,36 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
         <div className="card">
           <div className="overview-header">
             <h2 className="card-title">Team Members</h2>
-            <button className="add-member-btn" onClick={openAddModal}>+</button>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <button
+                onClick={() => setShowBulkUpload(true)}
+                style={{
+                  background: '#F5EFE7',
+                  color: '#1A1A1A',
+                  border: 'none',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '20px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = '#E8DFD0';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = '#F5EFE7';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                📄 Upload File
+              </button>
+              <button className="add-member-btn" onClick={openAddModal}>+</button>
+            </div>
           </div>
           
           <div className="team-grid">
@@ -298,7 +439,23 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
                 </div>
                 <div className="member-strengths">
                   {(member.strengths || []).map((strength, index) => (
-                    <span key={index} className="small-strength">
+                    <span
+                      key={index}
+                      className="small-strength"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStrengthClick(strength);
+                      }}
+                      style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
                       {strength}
                     </span>
                   ))}
@@ -347,18 +504,259 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
             ))}
           </div>
         </div>
+        
+        {/* AI Insights Section */}
+        <div className="card">
+          <h2 className="card-title">Insights</h2>
+          
+          {/* Team Insight */}
+          <div style={{ marginBottom: '2rem' }}>
+            <div style={{
+              background: '#F5EFE7',
+              borderRadius: '16px',
+              padding: '1.5rem',
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem'
+              }}>
+                <h3 style={{
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  color: '#1A1A1A',
+                  margin: 0
+                }}>Team Insight</h3>
+                <button
+                  onClick={generateTeamInsight}
+                  disabled={loadingTeamInsight}
+                  style={{
+                    background: '#003566',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '24px',
+                    padding: '0.5rem 1.25rem',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: loadingTeamInsight ? 'not-allowed' : 'pointer',
+                    opacity: loadingTeamInsight ? 0.7 : 1,
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => !loadingTeamInsight && (e.currentTarget.style.background = '#002244')}
+                  onMouseOut={(e) => !loadingTeamInsight && (e.currentTarget.style.background = '#003566')}
+                >
+                  {loadingTeamInsight ? 'Generating...' : 'Refresh (3 left)'}
+                </button>
+              </div>
+              
+              {loadingTeamInsight ? (
+                <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                  <div style={{
+                    width: '24px',
+                    height: '24px',
+                    border: '2px solid #f3f3f3',
+                    borderTop: '2px solid #003566',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto 0.5rem'
+                  }}></div>
+                  <p style={{ fontSize: '14px', color: '#6B7280' }}>Generating team insight...</p>
+                </div>
+              ) : (
+                <p style={{
+                  color: '#4A4A4A',
+                  fontSize: '15px',
+                  lineHeight: '1.6',
+                  margin: 0
+                }}>
+                  {teamInsight || "Click 'Refresh' to generate your team insight based on your actual strengths data."}
+                </p>
+              )}
+            </div>
+          </div>
+          
+          {/* Collaboration Insight */}
+          <div>
+            <p style={{
+              color: '#4A4A4A',
+              fontSize: '15px',
+              marginBottom: '1rem'
+            }}>
+              Click on two names below to see collaboration insights:
+            </p>
+            
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              marginBottom: '1.5rem'
+            }}>
+              {allMembers.map((member) => {
+                const isSelected = selectedMember1 === member.name || selectedMember2 === member.name;
+                return (
+                  <button
+                    key={member.name}
+                    onClick={() => {
+                      if (selectedMember1 === member.name) {
+                        setSelectedMember1('');
+                      } else if (selectedMember2 === member.name) {
+                        setSelectedMember2('');
+                      } else if (!selectedMember1) {
+                        setSelectedMember1(member.name);
+                      } else if (!selectedMember2) {
+                        setSelectedMember2(member.name);
+                      }
+                    }}
+                    style={{
+                      background: isSelected ? '#003566' : '#F5EFE7',
+                      color: isSelected ? '#FFFFFF' : '#1A1A1A',
+                      border: 'none',
+                      borderRadius: '24px',
+                      padding: '0.5rem 1.25rem',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.background = '#E8DFD0';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.background = '#F5EFE7';
+                      }
+                    }}
+                  >
+                    {member.name}
+                  </button>
+                );
+              })}
+            </div>
+            
+            {(selectedMember1 || selectedMember2 || collaborationInsight) && (
+              <div style={{
+                background: '#F5EFE7',
+                borderRadius: '16px',
+                padding: '1.5rem',
+                marginTop: '1rem'
+              }}>
+                {loadingCollabInsight ? (
+                  <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                    <div style={{
+                      width: '24px',
+                      height: '24px',
+                      border: '2px solid #f3f3f3',
+                      borderTop: '2px solid #003566',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite',
+                      margin: '0 auto 0.5rem'
+                    }}></div>
+                    <p style={{ fontSize: '14px', color: '#6B7280' }}>Generating collaboration insight...</p>
+                  </div>
+                ) : collaborationInsight ? (
+                  <p style={{
+                    color: '#4A4A4A',
+                    fontSize: '15px',
+                    lineHeight: '1.6',
+                    margin: 0
+                  }}>
+                    {collaborationInsight}
+                  </p>
+                ) : selectedMember1 && selectedMember2 ? (
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{
+                      fontSize: '15px',
+                      color: '#4A4A4A',
+                      marginBottom: '1rem'
+                    }}>
+                      Ready to analyze: <strong>{selectedMember1}</strong> & <strong>{selectedMember2}</strong>
+                    </p>
+                    <button
+                      onClick={generateCollaborationInsight}
+                      style={{
+                        background: '#003566',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '24px',
+                        padding: '0.5rem 1.5rem',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseOver={(e) => (e.currentTarget.style.background = '#002244')}
+                      onMouseOut={(e) => (e.currentTarget.style.background = '#003566')}
+                    >
+                      Generate Insight
+                    </button>
+                  </div>
+                ) : (
+                  <p style={{
+                    color: '#6B7280',
+                    fontSize: '14px',
+                    fontStyle: 'italic',
+                    textAlign: 'center',
+                    margin: 0
+                  }}>
+                    Select two team members to see collaboration insights.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Add/Edit Member Modal */}
       {showAddModal && (
-        <div className="modal active">
-          <div className="modal-content">
-            <button className="close-modal" onClick={resetModal}>×</button>
-            <h3 style={{ 
-              fontSize: '28px', 
-              fontWeight: 700, 
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }}>
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '20px',
+            padding: '2.5rem',
+            maxWidth: '600px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+            position: 'relative'
+          }}>
+            <button
+              onClick={resetModal}
+              style={{
+                position: 'absolute',
+                top: '1.5rem',
+                right: '1.5rem',
+                background: 'none',
+                border: 'none',
+                fontSize: '28px',
+                cursor: 'pointer',
+                color: '#6B7280',
+                lineHeight: 1
+              }}
+            >×</button>
+            
+            <h3 style={{
+              fontSize: '28px',
+              fontWeight: 700,
               marginBottom: '1.5rem',
-              letterSpacing: '-1px'
+              letterSpacing: '-1px',
+              color: '#1A1A1A'
             }}>
               {editingMember ? 'Edit Team Member' : 'Add Team Member'}
             </h3>
@@ -368,7 +766,8 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
                 display: 'block',
                 fontSize: '16px',
                 fontWeight: 600,
-                marginBottom: '0.5rem'
+                marginBottom: '0.5rem',
+                color: '#1A1A1A'
               }}>
                 Name
               </label>
@@ -377,7 +776,23 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
                 value={memberName}
                 onChange={(e) => setMemberName(e.target.value)}
                 placeholder="Enter team member name"
-                className="search-input"
+                style={{
+                  width: '100%',
+                  padding: '1rem 1.5rem',
+                  border: '2px solid #F5F0E8',
+                  borderRadius: '30px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  transition: 'all 0.3s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#003566';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(0, 53, 102, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#F5F0E8';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
 
@@ -386,7 +801,8 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
                 display: 'block',
                 fontSize: '16px',
                 fontWeight: 600,
-                marginBottom: '0.5rem'
+                marginBottom: '0.5rem',
+                color: '#1A1A1A'
               }}>
                 Strengths (select up to 5)
               </label>
@@ -396,19 +812,36 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search strengths..."
-                className="search-input"
-                style={{ marginBottom: '1rem' }}
+                style={{
+                  width: '100%',
+                  padding: '1rem 1.5rem',
+                  border: '2px solid #F5F0E8',
+                  borderRadius: '30px',
+                  fontSize: '16px',
+                  marginBottom: '1rem',
+                  outline: 'none',
+                  transition: 'all 0.3s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#003566';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(0, 53, 102, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#F5F0E8';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
 
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
                 gap: '0.5rem',
-                maxHeight: '200px',
+                maxHeight: '250px',
                 overflowY: 'auto',
-                padding: '0.5rem',
+                padding: '0.75rem',
                 border: '1px solid #E5E7EB',
-                borderRadius: '6px'
+                borderRadius: '12px',
+                backgroundColor: '#FAFAFA'
               }}>
                 {filteredStrengths.map((strength) => {
                   const isSelected = selectedStrengths.includes(strength);
@@ -420,14 +853,19 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
                       onClick={() => !isDisabled && handleStrengthToggle(strength)}
                       disabled={isDisabled}
                       style={{
-                        padding: '0.5rem',
+                        padding: '0.6rem 0.75rem',
                         border: isSelected ? '2px solid #003566' : '1px solid #E5E7EB',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         backgroundColor: isSelected ? '#003566' : '#FFFFFF',
                         color: isSelected ? '#FFFFFF' : isDisabled ? '#9CA3AF' : '#1A1A1A',
-                        fontSize: '12px',
+                        fontSize: '13px',
+                        fontWeight: 500,
                         cursor: isDisabled ? 'not-allowed' : 'pointer',
-                        opacity: isDisabled ? 0.5 : 1
+                        opacity: isDisabled ? 0.5 : 1,
+                        transition: 'all 0.2s ease',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
                       }}
                     >
                       {strength}
@@ -437,17 +875,49 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-              <button onClick={resetModal} className="action-btn" style={{ background: '#6B7280' }}>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+              <button
+                onClick={resetModal}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  border: '1px solid #D1D5DB',
+                  borderRadius: '24px',
+                  backgroundColor: '#FFFFFF',
+                  color: '#4A4A4A',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#F3F4F6')}
+                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#FFFFFF')}
+              >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={!memberName.trim() || selectedStrengths.length === 0 || loading}
-                className="action-btn"
                 style={{
+                  padding: '0.75rem 1.5rem',
+                  border: 'none',
+                  borderRadius: '24px',
+                  backgroundColor: '#003566',
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: (!memberName.trim() || selectedStrengths.length === 0 || loading) ? 'not-allowed' : 'pointer',
                   opacity: (!memberName.trim() || selectedStrengths.length === 0 || loading) ? 0.6 : 1,
-                  cursor: (!memberName.trim() || selectedStrengths.length === 0 || loading) ? 'not-allowed' : 'pointer'
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  if (!(!memberName.trim() || selectedStrengths.length === 0 || loading)) {
+                    e.currentTarget.style.backgroundColor = '#002244';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!(!memberName.trim() || selectedStrengths.length === 0 || loading)) {
+                    e.currentTarget.style.backgroundColor = '#003566';
+                  }
                 }}
               >
                 {loading ? 'Saving...' : (editingMember ? 'Update' : 'Add')}
@@ -520,6 +990,23 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Strength Encyclopedia Modal */}
+      {viewingStrength && (
+        <StrengthModal
+          strength={viewingStrength}
+          onClose={() => setViewingStrength(null)}
+        />
+      )}
+      
+      {/* Bulk Upload Modal */}
+      {showBulkUpload && (
+        <BulkUploadModal
+          onClose={() => setShowBulkUpload(false)}
+          onUpload={handleBulkUpload}
+          allStrengths={ALL_STRENGTHS}
+        />
       )}
     </div>
   );
