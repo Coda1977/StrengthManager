@@ -39,3 +39,10 @@ next-env.d.ts
 
 # Supabase
 .temp/
+
+# DevOps
+devops/config.json
+devops/domain-config.json
+devops/node_modules
+
+.vercel

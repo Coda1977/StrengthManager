@@ -1,0 +1,28 @@
+{
+  "vercel": {
+    "token": "YOUR_VERCEL_TOKEN_HERE",
+    "projectId": "YOUR_VERCEL_PROJECT_ID_HERE",
+    "teamId": "YOUR_VERCEL_TEAM_ID_HERE"
+  },
+  "godaddy": {
+    "key": "YOUR_GODADDY_API_KEY_HERE",
+    "secret": "YOUR_GODADDY_API_SECRET_HERE"
+  },
+  "resend": {
+    "apiKey": "YOUR_RESEND_API_KEY_HERE"
+  },
+  "supabase": {
+    "projectRef": "YOUR_SUPABASE_PROJECT_REF_HERE",
+    "projectUrl": "https://YOUR_PROJECT_REF.supabase.co",
+    "anonKey": "YOUR_SUPABASE_ANON_KEY_HERE",
+    "serviceRoleKey": "YOUR_SUPABASE_SERVICE_ROLE_KEY_HERE"
+  },
+  "domain": "yourdomain.com",
+  "environmentVariables": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://YOUR_PROJECT_REF.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_KEY_HERE",
+    "SUPABASE_SERVICE_ROLE_KEY": "YOUR_SUPABASE_SERVICE_ROLE_KEY_HERE",
+    "RESEND_API_KEY": "YOUR_RESEND_API_KEY_HERE",
+    "ANTHROPIC_API_KEY": "YOUR_ANTHROPIC_API_KEY_HERE"
+  }
+}

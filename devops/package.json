@@ -1,0 +1,32 @@
+{
+  "name": "strength-manager-devops",
+  "version": "1.0.0",
+  "description": "DevOps orchestration system for Strength Manager",
+  "type": "module",
+  "main": "mcp-devops-server.js",
+  "scripts": {
+    "start": "node mcp-devops-server.js",
+    "deploy": "node deploy-orchestrator.js",
+    "deploy:prod": "node deploy-orchestrator.js --production",
+    "deploy:full": "node deploy-orchestrator.js --production --domain --sync-dns --setup-email --env-vars",
+    "domain:setup": "node domain-manager.js setup",
+    "domain:verify": "node domain-manager.js verify"
+  },
+  "keywords": [
+    "devops",
+    "vercel",
+    "godaddy",
+    "resend",
+    "supabase",
+    "mcp",
+    "deployment"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

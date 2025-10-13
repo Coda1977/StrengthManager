@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "devops-orchestrator": {
+      "command": "node",
+      "args": ["./devops/mcp-devops-server.js"],
+      "cwd": "${workspaceFolder}",
+      "env": {},
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}

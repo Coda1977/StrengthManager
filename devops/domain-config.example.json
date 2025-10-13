@@ -1,0 +1,18 @@
+{
+  "vercel": {
+    "token": "your_vercel_token_here",
+    "projectId": "your_project_id_here",
+    "teamId": "your_team_id_here"
+  },
+  "godaddy": {
+    "apiKey": "your_godaddy_api_key_here",
+    "apiSecret": "your_godaddy_api_secret_here"
+  },
+  "resend": {
+    "apiKey": "your_resend_api_key_here"
+  },
+  "supabase": {
+    "projectRef": "your_supabase_project_ref_here",
+    "anonKey": "your_supabase_anon_key_here"
+  }
+}
