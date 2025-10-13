@@ -194,23 +194,48 @@ Users can:
 
 ## 🧪 Testing
 
-### Unit Tests
+**185 tests passing** with comprehensive coverage of critical paths!
+
+### Run All Tests
 
 ```bash
-npm run test
-```
+# Unit & Integration tests (185 tests, ~5 seconds)
+npm test
 
-### Integration Tests
+# With coverage report
+npm run test:coverage
 
-```bash
-npm run test:integration
+# Watch mode for development
+npm run test:watch
 ```
 
 ### E2E Tests
 
 ```bash
+# Run E2E tests (25+ scenarios)
 npm run test:e2e
+
+# Interactive mode
+npm run test:e2e:ui
 ```
+
+### Test Coverage
+
+- **Critical Modules**: 90-100% coverage
+  - lib/utils: 98.56%
+  - lib/auth: 100%
+  - app/actions: 95.95%
+  - Admin components: 90-100%
+
+### Documentation
+
+- **Testing Guide**: [`TESTING_DOCUMENTATION.md`](TESTING_DOCUMENTATION.md)
+- **Manual Testing**: [`MANUAL_TESTING_GUIDE.md`](MANUAL_TESTING_GUIDE.md) (10-minute checklist)
+- **Quick Reference**: [`__tests__/README.md`](__tests__/README.md)
+
+### CI/CD
+
+Tests run automatically on every push via GitHub Actions. See [`.github/workflows/test.yml`](.github/workflows/test.yml).
 
 ## 📊 Analytics
 

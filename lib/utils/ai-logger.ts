@@ -90,6 +90,13 @@ export function extractTokenCounts(response: any): {
   inputTokens: number;
   outputTokens: number;
 } {
+  if (!response) {
+    return {
+      inputTokens: 0,
+      outputTokens: 0,
+    };
+  }
+  
   return {
     inputTokens: response.usage?.input_tokens || 0,
     outputTokens: response.usage?.output_tokens || 0,
