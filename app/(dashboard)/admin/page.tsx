@@ -23,7 +23,6 @@ const AdminDashboard = dynamic(() => import('./AdminDashboard'), {
       }} />
     </div>
   ),
-  ssr: false,
 });
 
 export default async function AdminPage() {

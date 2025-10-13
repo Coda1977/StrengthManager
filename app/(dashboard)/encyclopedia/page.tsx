@@ -23,7 +23,6 @@ const EncyclopediaClient = dynamic(() => import('./EncyclopediaClient'), {
       }} />
     </div>
   ),
-  ssr: false,
 });
 
 export default async function EncyclopediaPage() {

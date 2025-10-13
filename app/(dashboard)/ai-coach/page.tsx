@@ -23,7 +23,6 @@ const ChatClient = dynamic(() => import('./ChatClient'), {
       }} />
     </div>
   ),
-  ssr: false,
 });
 
 export default async function AICoachPage() {

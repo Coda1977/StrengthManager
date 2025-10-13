@@ -23,7 +23,6 @@ const DashboardClient = dynamic(() => import('./DashboardClient'), {
       }} />
     </div>
   ),
-  ssr: false, // Client-only component
 });
 
 // Enable ISR with 60 second revalidation for better performance
