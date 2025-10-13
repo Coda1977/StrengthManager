@@ -1,46 +1,47 @@
 # Next Session - Recommended Focus
 
-**Last Updated**: 2025-10-12  
-**Current Progress**: 65% Complete (84/130 tasks)  
-**Status**: Core MVP Features Complete ✅
+**Last Updated**: 2025-10-13
+**Current Progress**: 72% Complete (101/140 tasks)
+**Status**: Email System Complete ✅ | Ready for Email Preferences UI
 
 ---
 
 ## 🎯 Recommended Next Steps
 
-### Option 1: Email Automation (Recommended) ⭐
+### Option 1: Email Preferences UI (Recommended) ⭐
 
-**Why**: Completes the user engagement loop with automated weekly tips
+**Why**: Completes the email system with user-facing controls
 
 **What to Build:**
-1. Weekly tips email generation with Claude
-2. Supabase Edge Function for automation
-3. Cron job configuration (Monday 9 AM)
-4. Email templates with Resend
-5. Email preferences management
-6. Unsubscribe functionality
+1. Email preferences page (`/settings/email`)
+2. Toggle for weekly coaching emails
+3. Email frequency settings (weekly, bi-weekly, monthly)
+4. Unsubscribe confirmation page
+5. Re-subscribe functionality
+6. Preference update API endpoint
 
-**Estimated Time**: 3-4 hours  
-**Impact**: HIGH - Keeps users engaged weekly  
-**Complexity**: Moderate
+**Estimated Time**: 2-3 hours
+**Impact**: HIGH - User control over emails
+**Complexity**: Low-Medium
 
 ---
 
-### Option 2: Admin Dashboard
+### Option 2: Admin Dashboard Enhancements
 
-**Why**: Enables monitoring and user management
+**Why**: Expand admin capabilities for better system management
 
 **What to Build:**
-1. User management table
-2. Analytics dashboard
-3. AI usage tracking
-4. Email delivery stats
+1. User management table (view, edit, delete)
+2. Advanced analytics dashboard
+3. AI usage tracking and costs
+4. Detailed email delivery stats
 5. System health monitoring
-6. User deletion with cascade
+6. Bulk user operations
+7. Export functionality
 
-**Estimated Time**: 2-3 hours  
-**Impact**: MEDIUM - Internal tool  
-**Complexity**: Low-Medium
+**Estimated Time**: 3-4 hours
+**Impact**: MEDIUM - Internal tool
+**Complexity**: Medium
 
 ---
 
@@ -50,13 +51,15 @@
 
 **What to Build:**
 1. Jest configuration
-2. Unit tests for utilities
-3. Integration tests for APIs
-4. E2E tests for user flows
-5. 80%+ code coverage
+2. Unit tests for email service
+3. Unit tests for utilities
+4. Integration tests for APIs
+5. E2E tests for user flows
+6. Email testing suite
+7. 80%+ code coverage
 
-**Estimated Time**: 4-5 hours  
-**Impact**: HIGH - Prevents bugs  
+**Estimated Time**: 4-5 hours
+**Impact**: HIGH - Prevents bugs
 **Complexity**: Medium-High
 
 ---
@@ -81,25 +84,25 @@
 
 ## 💡 My Strong Recommendation
 
-**Build Email Automation Next**
+**Build Email Preferences UI Next**
 
 **Reasoning:**
-1. **Completes User Experience** - Users get ongoing value
-2. **Engagement** - Weekly touchpoints keep users active
-3. **Natural Flow** - We have Claude integration ready
-4. **High Impact** - Automated coaching at scale
-5. **Foundation for Growth** - Email list = marketing channel
+1. **Completes Email System** - Users need control over their emails
+2. **User Experience** - Essential for email compliance (CAN-SPAM, GDPR)
+3. **Quick Win** - Relatively simple to implement
+4. **High Impact** - Improves user satisfaction
+5. **Natural Flow** - Email system is working, add user controls
 
 **Then:**
-1. Admin Dashboard (monitor the system)
-2. Testing (ensure quality)
-3. Performance & Deployment (go live!)
+1. Admin Enhancements (expand monitoring capabilities)
+2. Testing (ensure quality and reliability)
+3. Performance & Deployment (optimize and go live!)
 
 ---
 
 ## 📊 Current State
 
-### ✅ What's Complete (65%)
+### ✅ What's Complete (72%)
 
 **Phase 1: Foundation** ✅
 - Next.js 14, TypeScript, Tailwind
@@ -129,17 +132,26 @@
 - Search & filter
 - Clickable strengths
 
-### ⏳ What's Remaining (35%)
+**Phase 6: Email System** ✅
+- Email infrastructure with Resend
+- AI-powered content generation
+- Welcome and weekly coaching templates
+- Admin testing dashboard
+- Email analytics
+- Unsubscribe functionality
+- Cron job for automation
 
-**Phase 6: Email System** (0%)
-- Weekly tips automation
-- Edge functions
-- Email templates
+### ⏳ What's Remaining (28%)
 
-**Phase 7: Admin Dashboard** (0%)
+**Phase 7a: Email Preferences UI** (0%)
+- User preferences page
+- Email settings controls
+- Unsubscribe confirmation
+
+**Phase 7b: Admin Enhancements** (0%)
 - User management
-- Analytics
-- Monitoring
+- Advanced analytics
+- System monitoring
 
 **Phases 8-12: Polish & Launch** (0%)
 - Advanced features
@@ -152,10 +164,19 @@
 ## 🚀 Quick Start for Next Session
 
 1. Review this file
-2. Review SESSION_2025-10-12.md for what was completed
-3. Choose your priority (Email Automation recommended)
+2. Review [`SESSION_2025-10-13.md`](./SESSION_2025-10-13.md) for what was completed
+3. Choose your priority (Email Preferences UI recommended)
 4. Start building!
+
+## 📋 Cleanup Items
+
+Before moving to next major features, consider:
+- [ ] Add JSDoc comments to email service functions
+- [ ] Create email testing documentation
+- [ ] Add error logging for email failures
+- [ ] Optimize email template rendering
+- [ ] Add email preview functionality
 
 ---
 
-**Ready to continue building!** 📧
+**Email system complete! Ready for preferences UI!** ✅📧

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { validateStrengthSelection } from '@/lib/utils/strengths';
+import { sendWelcomeEmail } from '@/lib/email/email-service';
 
 export async function completeOnboarding(formData: FormData) {
   const supabase = await createClient();
@@ -40,6 +41,28 @@ export async function completeOnboarding(formData: FormData) {
     event_type: 'onboarding_completed',
     metadata: { strengths, timestamp: new Date().toISOString() },
   } as any);
+
+  // Get user's full data for welcome email
+  const { data: userData } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  // Send welcome email (don't block onboarding if it fails)
+  if (userData) {
+    try {
+      await sendWelcomeEmail({
+        id: user.id,
+        email: user.email!,
+        name: (userData as any).name,
+        top_5_strengths: strengths,
+      });
+    } catch (emailError) {
+      // Log error but don't fail onboarding
+      console.error('Failed to send welcome email:', emailError);
+    }
+  }
 
   revalidatePath('/', 'layout');
   redirect('/dashboard');

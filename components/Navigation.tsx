@@ -19,10 +19,10 @@ export default function Navigation({ simplified = false }: { simplified?: boolea
       if (user) {
         const { data } = await supabase
           .from('users')
-          .select('is_admin')
+          .select('role')
           .eq('id', user.id)
-          .single() as { data: { is_admin: boolean } | null };
-        setIsAdmin(data?.is_admin || false);
+          .single() as { data: { role: string } | null };
+        setIsAdmin(data?.role === 'admin');
       }
     };
     checkAdmin();

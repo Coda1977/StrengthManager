@@ -1,8 +1,19 @@
 import { Resend } from 'resend';
 
-export const resend = new Resend(process.env.RESEND_API_KEY!);
+if (!process.env.RESEND_API_KEY) {
+  throw new Error('RESEND_API_KEY environment variable is not set');
+}
 
-// Email templates
+export const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Email configuration
+// Using Resend's test domain for now - update to your verified domain later
+export const EMAIL_CONFIG = {
+  from: 'Strength Manager <onboarding@resend.dev>',
+  replyTo: 'tinymanagerai@gmail.com',
+} as const;
+
+// Legacy email templates (kept for reference, will be replaced by React Email templates)
 export const emailTemplates = {
   welcome: (name: string) => ({
     subject: 'Welcome to Strength Manager! 🎯',
