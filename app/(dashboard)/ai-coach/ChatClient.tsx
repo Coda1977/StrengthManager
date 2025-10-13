@@ -716,27 +716,32 @@ export default function ChatClient() {
                       alignItems: 'flex-start'
                     }}
                   >
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      background: msg.type === 'user' ? '#003566' : '#FFD600',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '20px',
-                      flexShrink: 0
-                    }}>
-                      {msg.type === 'user' ? '👤' : '⭐'}
-                    </div>
-                    <div style={{ flex: 1 }}>
+                    {/* Only show avatar if message has content (hide during streaming) */}
+                    {(msg.type === 'user' || msg.content) && (
                       <div style={{
-                        background: '#FFFFFF',
-                        borderRadius: '16px',
-                        padding: '1rem 1.5rem',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                        marginBottom: msg.type === 'ai' ? '0.5rem' : '0'
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: msg.type === 'user' ? '#003566' : '#FFD600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '20px',
+                        flexShrink: 0
                       }}>
+                        {msg.type === 'user' ? '👤' : '⭐'}
+                      </div>
+                    )}
+                    {/* Only show message bubble if there's content */}
+                    {(msg.type === 'user' || msg.content) && (
+                      <div style={{ flex: 1 }}>
+                        <div style={{
+                          background: '#FFFFFF',
+                          borderRadius: '16px',
+                          padding: '1rem 1.5rem',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                          marginBottom: msg.type === 'ai' ? '0.5rem' : '0'
+                        }}>
                         {msg.type === 'user' ? (
                           <div style={{
                             fontSize: '15px',
@@ -776,35 +781,36 @@ export default function ChatClient() {
                             }}
                             dangerouslySetInnerHTML={{ __html: formatMarkdown(msg.content) }}
                           />
+                          )}
+                        </div>
+                        {msg.type === 'ai' && !msg.content.startsWith('ERROR:') && msg.content && (
+                          <button
+                            onClick={() => copyMessage(msg.content)}
+                            style={{
+                              background: '#F5EFE7',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '0.4rem 0.75rem',
+                              fontSize: '13px',
+                              color: '#6B7280',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.4rem',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseOver={(e) => (e.currentTarget.style.background = '#E8DFD0')}
+                            onMouseOut={(e) => (e.currentTarget.style.background = '#F5EFE7')}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1-2-2h2"/>
+                            </svg>
+                            Copy
+                          </button>
                         )}
                       </div>
-                      {msg.type === 'ai' && !msg.content.startsWith('ERROR:') && (
-                        <button
-                          onClick={() => copyMessage(msg.content)}
-                          style={{
-                            background: '#F5EFE7',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '0.4rem 0.75rem',
-                            fontSize: '13px',
-                            color: '#6B7280',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.4rem',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseOver={(e) => (e.currentTarget.style.background = '#E8DFD0')}
-                          onMouseOut={(e) => (e.currentTarget.style.background = '#F5EFE7')}
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1-2-2h2"/>
-                          </svg>
-                          Copy
-                        </button>
-                      )}
-                    </div>
+                    )}
                   </div>
                   
                   {/* Follow-up Questions */}
