@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, memo } from 'react';
 
 export interface ChartCardProps {
   title: string;
@@ -8,7 +8,7 @@ export interface ChartCardProps {
   loading?: boolean;
 }
 
-export default function ChartCard({ title, children, loading = false }: ChartCardProps) {
+const ChartCard = memo(function ChartCard({ title, children, loading = false }: ChartCardProps) {
   return (
     <div
       style={{
@@ -53,4 +53,6 @@ export default function ChartCard({ title, children, loading = false }: ChartCar
       )}
     </div>
   );
-}
+});
+
+export default ChartCard;

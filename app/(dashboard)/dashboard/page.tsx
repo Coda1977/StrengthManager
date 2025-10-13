@@ -1,7 +1,33 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import Navigation from '@/components/Navigation';
-import DashboardClient from './DashboardClient';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for large client component with loading state
+const DashboardClient = dynamic(() => import('./DashboardClient'), {
+  loading: () => (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#F5F0E8'
+    }}>
+      <div style={{
+        width: '40px',
+        height: '40px',
+        border: '4px solid #E5E7EB',
+        borderTop: '4px solid #003566',
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite'
+      }} />
+    </div>
+  ),
+  ssr: false, // Client-only component
+});
+
+// Enable ISR with 60 second revalidation for better performance
+export const revalidate = 60;
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -12,10 +38,10 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  // Get user data
+  // Get user data - optimized query with only needed fields
   const { data: userData, error: userError } = await supabase
     .from('users')
-    .select('id, email, name, top_5_strengths, role')
+    .select('id, email, name, top_5_strengths')
     .eq('id', user.id)
     .single() as any;
 
@@ -24,12 +50,13 @@ export default async function DashboardPage() {
     redirect('/onboarding');
   }
 
-  // Get team members
+  // Get team members - optimized with limit and specific fields
   const { data: teamMembersData } = await supabase
     .from('team_members')
     .select('id, name, top_5_strengths')
     .eq('user_id', user.id)
-    .order('created_at', { ascending: true }) as any;
+    .order('created_at', { ascending: false })
+    .limit(50) as any; // Limit to 50 most recent team members
 
   const teamMembers = teamMembersData?.map((member: any) => ({
     id: member.id,

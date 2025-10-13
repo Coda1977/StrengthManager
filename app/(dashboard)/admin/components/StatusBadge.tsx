@@ -1,5 +1,7 @@
 'use client';
 
+import { memo } from 'react';
+
 export interface StatusBadgeProps {
   status: 'success' | 'warning' | 'error' | 'info';
   label: string;
@@ -28,7 +30,7 @@ const statusStyles = {
   },
 };
 
-export default function StatusBadge({ status, label }: StatusBadgeProps) {
+const StatusBadge = memo(function StatusBadge({ status, label }: StatusBadgeProps) {
   const styles = statusStyles[status];
 
   return (
@@ -49,4 +51,6 @@ export default function StatusBadge({ status, label }: StatusBadgeProps) {
       {label}
     </span>
   );
-}
+});
+
+export default StatusBadge;

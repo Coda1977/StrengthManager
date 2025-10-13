@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 
 export interface Column<T> {
   key: string;
@@ -17,7 +17,7 @@ export interface DataTableProps<T> {
   itemsPerPage?: number;
 }
 
-export default function DataTable<T extends Record<string, any>>({
+const DataTable = memo(function DataTable<T extends Record<string, any>>({
   columns,
   data,
   onRowClick,
@@ -241,4 +241,6 @@ export default function DataTable<T extends Record<string, any>>({
       )}
     </div>
   );
-}
+}) as <T extends Record<string, any>>(props: DataTableProps<T>) => JSX.Element;
+
+export default DataTable;
