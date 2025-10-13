@@ -1,4 +1,5 @@
 import { anthropic, CLAUDE_MODEL } from '@/lib/anthropic/client';
+import { logAIUsage, extractTokenCounts } from '@/lib/utils/ai-logger';
 
 // Types for generated content
 export interface WelcomeEmailContent {
@@ -121,7 +122,8 @@ export async function generateWeeklyEmailContent(
   teamMemberFeaturedStrength: string,
   previousPersonalTips: string[] = [],
   previousOpeners: string[] = [],
-  previousTeamMembers: string[] = []
+  previousTeamMembers: string[] = [],
+  userId?: string
 ): Promise<WeeklyEmailContent> {
   const prompt = `# AI Instructions - Weekly Nudge Email
 
@@ -230,6 +232,16 @@ Return ONLY valid JSON, no other text.`;
           content: prompt,
         },
       ],
+    });
+
+    // Log AI usage
+    const { inputTokens, outputTokens } = extractTokenCounts(response);
+    await logAIUsage({
+      requestType: 'email_content',
+      model: CLAUDE_MODEL,
+      inputTokens,
+      outputTokens,
+      userId,
     });
 
     const content = response.content[0];

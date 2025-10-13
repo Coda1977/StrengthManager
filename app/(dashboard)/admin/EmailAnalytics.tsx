@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import StatCard from './components/StatCard';
+import ChartCard from './components/ChartCard';
 
 interface EmailLog {
   id: string;
@@ -13,28 +16,45 @@ interface EmailLog {
   resend_id: string | null;
 }
 
+interface DailyTrend {
+  date: string;
+  sent: number;
+  failed: number;
+}
+
+interface WeeklyPerformance {
+  week: number;
+  sent: number;
+  failed: number;
+  successRate: number;
+}
+
 interface EmailStats {
   totalSent: number;
   totalFailed: number;
   welcomeEmails: number;
   weeklyEmails: number;
   activeSubscriptions: number;
+  unsubscribeRate: number;
   recentLogs: EmailLog[];
+  dailyTrend: DailyTrend[];
+  weeklyPerformance: WeeklyPerformance[];
 }
 
 export default function EmailAnalytics() {
   const [stats, setStats] = useState<EmailStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'welcome' | 'weekly_coaching'>('all');
+  const [period, setPeriod] = useState<'7d' | '30d' | 'all'>('30d');
 
   useEffect(() => {
     fetchStats();
-  }, [filter]);
+  }, [filter, period]);
 
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/email-stats?filter=${filter}`);
+      const response = await fetch(`/api/admin/email-stats?filter=${filter}&period=${period}`);
       const data = await response.json();
       setStats(data);
     } catch (error) {
@@ -82,6 +102,30 @@ export default function EmailAnalytics() {
 
   return (
     <div>
+      {/* Period Selector */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>
+          {(['7d', '30d', 'all'] as const).map((periodType) => (
+            <button
+              key={periodType}
+              onClick={() => setPeriod(periodType)}
+              style={{
+                padding: '0.75rem 1rem',
+                border: 'none',
+                backgroundColor: 'transparent',
+                borderBottom: period === periodType ? '2px solid #003566' : '2px solid transparent',
+                color: period === periodType ? '#003566' : '#6B7280',
+                fontWeight: period === periodType ? '600' : '400',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+              }}
+            >
+              {periodType === '7d' ? '7 Days' : periodType === '30d' ? '30 Days' : 'All Time'}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Stats Cards */}
       <div
         style={{
@@ -91,62 +135,133 @@ export default function EmailAnalytics() {
           marginBottom: '2rem',
         }}
       >
-        <div
-          style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: '8px',
-            padding: '1.5rem',
-            border: '1px solid #E5E7EB',
-          }}
-        >
-          <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: '#6B7280' }}>Total Sent</p>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: '700', color: '#10B981' }}>
-            {stats.totalSent}
-          </p>
-        </div>
+        <StatCard
+          title="Total Sent"
+          value={stats.totalSent}
+          color="green"
+        />
+        <StatCard
+          title="Failed"
+          value={stats.totalFailed}
+          color="red"
+        />
+        <StatCard
+          title="Delivery Rate"
+          value={`${deliveryRate}%`}
+          color="blue"
+        />
+        <StatCard
+          title="Active Subscriptions"
+          value={stats.activeSubscriptions}
+          color="orange"
+        />
+        <StatCard
+          title="Unsubscribe Rate"
+          value={`${stats.unsubscribeRate}%`}
+          subtitle="Of all subscriptions"
+          color="purple"
+        />
+      </div>
 
-        <div
-          style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: '8px',
-            padding: '1.5rem',
-            border: '1px solid #E5E7EB',
-          }}
-        >
-          <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: '#6B7280' }}>Failed</p>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: '700', color: '#EF4444' }}>
-            {stats.totalFailed}
-          </p>
-        </div>
+      {/* Email Delivery Trend Chart */}
+      <div style={{ marginBottom: '2rem' }}>
+        <ChartCard title="Email Delivery Trend" loading={loading}>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={stats.dailyTrend} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 12 }}
+                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              />
+              <YAxis />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '6px',
+                }}
+                labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              />
+              <Legend />
+              <Line type="monotone" dataKey="sent" stroke="#10B981" strokeWidth={2} name="Sent" />
+              <Line type="monotone" dataKey="failed" stroke="#EF4444" strokeWidth={2} name="Failed" />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </div>
 
+      {/* Weekly Performance Table */}
+      <div style={{ marginBottom: '2rem' }}>
         <div
           style={{
             backgroundColor: '#FFFFFF',
-            borderRadius: '8px',
-            padding: '1.5rem',
+            borderRadius: '12px',
             border: '1px solid #E5E7EB',
+            overflow: 'hidden',
           }}
         >
-          <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: '#6B7280' }}>Delivery Rate</p>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: '700', color: '#003566' }}>
-            {deliveryRate}%
-          </p>
-        </div>
-
-        <div
-          style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: '8px',
-            padding: '1.5rem',
-            border: '1px solid #E5E7EB',
-          }}
-        >
-          <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: '#6B7280' }}>
-            Active Subscriptions
-          </p>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: '700', color: '#CC9B00' }}>
-            {stats.activeSubscriptions}
-          </p>
+          <div style={{ padding: '1.5rem', borderBottom: '1px solid #E5E7EB' }}>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: '1.125rem',
+                fontWeight: '600',
+                color: '#1A1A1A',
+              }}
+            >
+              Weekly Email Performance (Weeks 1-12)
+            </h3>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
+                  <th style={tableHeaderStyle}>Week</th>
+                  <th style={tableHeaderStyle}>Sent</th>
+                  <th style={tableHeaderStyle}>Failed</th>
+                  <th style={tableHeaderStyle}>Success Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.weeklyPerformance.filter((week) => week.sent > 0 || week.failed > 0).length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ padding: '2rem', textAlign: 'center', color: '#6B7280' }}>
+                      No weekly coaching emails sent yet
+                    </td>
+                  </tr>
+                ) : (
+                  stats.weeklyPerformance
+                    .filter((week) => week.sent > 0 || week.failed > 0)
+                    .map((week) => (
+                      <tr key={week.week} style={{ borderBottom: '1px solid #F3F4F6' }}>
+                        <td style={tableCellStyle}>Week {week.week}</td>
+                        <td style={tableCellStyle}>
+                          <span style={{ color: '#10B981', fontWeight: '600' }}>{week.sent}</span>
+                        </td>
+                        <td style={tableCellStyle}>
+                          <span style={{ color: '#EF4444', fontWeight: '600' }}>{week.failed}</span>
+                        </td>
+                        <td style={tableCellStyle}>
+                          <span
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '4px',
+                              fontSize: '0.875rem',
+                              fontWeight: '600',
+                              backgroundColor: week.successRate >= 95 ? '#D1FAE5' : week.successRate >= 80 ? '#FEF3C7' : '#FEE2E2',
+                              color: week.successRate >= 95 ? '#065F46' : week.successRate >= 80 ? '#92400E' : '#991B1B',
+                            }}
+                          >
+                            {week.successRate}%
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

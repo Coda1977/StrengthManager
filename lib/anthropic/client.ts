@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { logAIUsage, extractTokenCounts } from '@/lib/utils/ai-logger';
 
 export const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -93,9 +94,11 @@ export async function generateConversationTitle(firstMessage: string): Promise<s
 // Stream chat response
 export async function streamChatResponse(
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
-  systemPrompt: string
+  systemPrompt: string,
+  userId?: string,
+  conversationId?: string
 ) {
-  return anthropic.messages.stream({
+  const stream = anthropic.messages.stream({
     model: CLAUDE_MODEL,
     max_tokens: 1024,
     system: systemPrompt,
@@ -104,13 +107,31 @@ export async function streamChatResponse(
       content: msg.content,
     })),
   });
+
+  // Log usage after stream completes
+  stream.finalMessage().then((message) => {
+    const { inputTokens, outputTokens } = extractTokenCounts(message);
+    logAIUsage({
+      requestType: 'chat',
+      model: CLAUDE_MODEL,
+      inputTokens,
+      outputTokens,
+      userId,
+      conversationId,
+    });
+  }).catch((error) => {
+    console.error('Error logging chat usage:', error);
+  });
+
+  return stream;
 }
 
 // Generate weekly tips
 export async function generateWeeklyTips(
   userName: string,
   userStrengths: string[],
-  teamMembers: Array<{ name: string; strengths: string[] }>
+  teamMembers: Array<{ name: string; strengths: string[] }>,
+  userId?: string
 ): Promise<{ personalTip: string; teamTip: string }> {
   const prompt = `Generate two actionable tips for ${userName}, a manager with these top 5 strengths: ${userStrengths.join(', ')}.
 
@@ -132,6 +153,16 @@ Format as JSON:
       model: CLAUDE_MODEL,
       max_tokens: 500,
       messages: [{ role: 'user', content: prompt }],
+    });
+
+    // Log AI usage
+    const { inputTokens, outputTokens } = extractTokenCounts(response);
+    await logAIUsage({
+      requestType: 'insights',
+      model: CLAUDE_MODEL,
+      inputTokens,
+      outputTokens,
+      userId,
     });
 
     const content = response.content[0].type === 'text' ? response.content[0].text : '{}';
@@ -157,7 +188,8 @@ export async function generateSynergyTip(
     teamMembers?: Array<{ name: string; strengths: string[] }>;
     member1?: { name: string; strengths: string[] };
     member2?: { name: string; strengths: string[] };
-  }
+  },
+  userId?: string
 ): Promise<string> {
   let prompt = '';
   
@@ -183,7 +215,17 @@ Focus on how their strengths complement each other and one specific action to ma
       messages: [{ role: 'user', content: prompt }],
     });
 
-    return response.content[0].type === 'text' 
+    // Log AI usage
+    const { inputTokens, outputTokens } = extractTokenCounts(response);
+    await logAIUsage({
+      requestType: 'synergy_tips',
+      model: CLAUDE_MODEL,
+      inputTokens,
+      outputTokens,
+      userId,
+    });
+
+    return response.content[0].type === 'text'
       ? response.content[0].text.trim()
       : 'Focus on leveraging complementary strengths.';
   } catch (error) {
