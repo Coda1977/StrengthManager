@@ -1,5 +1,4 @@
 'use server';
-// @ts-nocheck - Supabase generated types cause compilation errors with update operations
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -27,13 +26,13 @@ export async function completeOnboarding(formData: FormData) {
   }
 
   // Update user profile with strengths
-  const { error: updateError } = await (supabase
+  const result = await supabase
     .from('users')
     .update({ top_5_strengths: strengths })
-    .eq('id', user.id) as any);
+    .eq('id', user.id);
 
-  if (updateError) {
-    return { error: updateError.message };
+  if (result.error) {
+    return { error: result.error.message };
   }
 
   // Track onboarding completion

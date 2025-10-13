@@ -1,4 +1,3 @@
-// @ts-nocheck - Supabase generated types cause compilation errors with update operations
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
@@ -35,27 +34,25 @@ export async function PUT(
       return NextResponse.json({ error: 'Not found or unauthorized' }, { status: 404 });
     }
 
-    const updateResult = await supabase
+    const result = await supabase
       .from('team_members')
       .update({
         name,
         top_5_strengths: strengths,
-      } as any)
+      })
       .eq('id', id)
       .select()
       .single();
-    
-    const { data: updated, error } = updateResult as any;
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (result.error) {
+      return NextResponse.json({ error: result.error.message }, { status: 500 });
     }
 
-    const typedUpdated = updated as { id: string; name: string; top_5_strengths: string[] };
+    const updated = result.data as { id: string; name: string; top_5_strengths: string[] };
     return NextResponse.json({
-      id: typedUpdated.id,
-      name: typedUpdated.name,
-      strengths: typedUpdated.top_5_strengths
+      id: updated.id,
+      name: updated.name,
+      strengths: updated.top_5_strengths
     });
   } catch (error) {
     console.error('Error updating team member:', error);
