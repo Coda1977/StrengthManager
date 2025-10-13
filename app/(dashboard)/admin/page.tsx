@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import Navigation from '@/components/Navigation';
 import AdminDashboard from './AdminDashboard';
 
 export default async function AdminPage() {
@@ -25,5 +26,10 @@ export default async function AdminPage() {
     redirect('/dashboard');
   }
 
-  return <AdminDashboard />;
+  return (
+    <>
+      <Navigation />
+      <AdminDashboard />
+    </>
+  );
 }
