@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     // Build base query
     let query = supabase
       .from('ai_usage_logs')
-      .select('*');
+      .select('request_type, model, input_tokens, output_tokens, total_tokens, estimated_cost, created_at, user_id');
 
     if (dateFilter) {
       query = query.gte('created_at', dateFilter.toISOString());

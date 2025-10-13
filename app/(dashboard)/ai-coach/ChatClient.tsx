@@ -136,7 +136,7 @@ export default function ChatClient() {
     }
   };
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     if (!message.trim() || isTyping) return;
 
     const userMessage: Message = {
@@ -230,7 +230,7 @@ export default function ChatClient() {
       ));
       setIsTyping(false);
     }
-  };
+  }, [message, isTyping, messages, currentChatId]);
 
   const retryLastMessage = () => {
     const lastUserMessage = messages.filter(m => m.type === 'user').pop();

@@ -29,11 +29,12 @@ export async function PUT(
       .eq('id', id)
       .single();
 
-    if (!existing || existing.user_id !== user.id) {
+    const typedExisting = existing as { user_id: string } | null;
+    if (!typedExisting || typedExisting.user_id !== user.id) {
       return NextResponse.json({ error: 'Not found or unauthorized' }, { status: 404 });
     }
 
-    const { data: updated, error } = await supabase
+    const updateResult = await supabase
       .from('team_members')
       .update({
         name,
@@ -42,16 +43,19 @@ export async function PUT(
       .eq('id', id)
       .select()
       .single();
+    
+    const { data: updated, error } = updateResult as any;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    const typedUpdated = updated as { id: string; name: string; top_5_strengths: string[] };
     return NextResponse.json({
-      id: updated.id,
-      name: updated.name,
-      strengths: updated.top_5_strengths
-    } as any);
+      id: typedUpdated.id,
+      name: typedUpdated.name,
+      strengths: typedUpdated.top_5_strengths
+    });
   } catch (error) {
     console.error('Error updating team member:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -80,7 +84,8 @@ export async function DELETE(
       .eq('id', id)
       .single();
 
-    if (!existing || existing.user_id !== user.id) {
+    const typedExisting = existing as { user_id: string; name: string } | null;
+    if (!typedExisting || typedExisting.user_id !== user.id) {
       return NextResponse.json({ error: 'Not found or unauthorized' }, { status: 404 });
     }
 
@@ -97,7 +102,7 @@ export async function DELETE(
     await supabase.from('analytics_events').insert({
       user_id: user.id,
       event_type: 'team_member_deleted',
-      metadata: { member_name: existing.name },
+      metadata: { member_name: typedExisting.name },
     } as any);
 
     return NextResponse.json({ success: true });

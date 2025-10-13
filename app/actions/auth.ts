@@ -26,7 +26,7 @@ export async function login(formData: FormData) {
       user_id: user.id,
       event_type: 'login',
       metadata: { timestamp: new Date().toISOString() },
-    });
+    } as any);
   }
 
   revalidatePath('/', 'layout');
@@ -63,7 +63,7 @@ export async function signup(formData: FormData) {
     name: data.name,
     top_5_strengths: [], // Will be filled during onboarding
     role: 'user',
-  });
+  } as any);
 
   if (profileError) {
     return { error: profileError.message };
@@ -74,7 +74,7 @@ export async function signup(formData: FormData) {
     user_id: authData.user.id,
     frequency: 'weekly',
     paused: false,
-  });
+  } as any);
 
   // Send welcome email
   await sendWelcomeEmail(data.email, data.name);

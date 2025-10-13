@@ -14,8 +14,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { message, mode, conversationHistory = [] } = body;
 
-    if (!message || !mode) {
-      return NextResponse.json({ error: 'Message and mode are required' }, { status: 400 });
+    // Validate message
+    if (!message || typeof message !== 'string') {
+      return NextResponse.json({ error: 'Message is required and must be a string' }, { status: 400 });
+    }
+    if (message.length > 5000) {
+      return NextResponse.json({ error: 'Message too long (max 5000 characters)' }, { status: 400 });
+    }
+    if (message.trim().length === 0) {
+      return NextResponse.json({ error: 'Message cannot be empty' }, { status: 400 });
+    }
+
+    // Validate mode
+    if (!mode) {
+      return NextResponse.json({ error: 'Mode is required' }, { status: 400 });
+    }
+    if (!['my-strengths', 'team-strengths'].includes(mode)) {
+      return NextResponse.json({ error: 'Invalid mode' }, { status: 400 });
     }
 
     // Get user data

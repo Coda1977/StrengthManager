@@ -25,10 +25,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: validation.errors.join(', ') }, { status: 400 });
     }
 
-    const { error } = await supabase
+    const updateResult: any = await supabase
       .from('users')
       .update({ top_5_strengths: topStrengths } as any)
       .eq('id', user.id);
+    
+    const { error } = updateResult;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

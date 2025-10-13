@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
       .from('chat_conversations')
       .select('*')
       .eq('user_id', user.id)
-      .order('updated_at', { ascending: false });
+      .order('updated_at', { ascending: false })
+      .limit(50);
 
     if (error) throw error;
 
@@ -42,8 +43,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, mode } = body;
 
-    if (!title || !mode) {
-      return NextResponse.json({ error: 'Title and mode are required' }, { status: 400 });
+    // Validate title
+    if (!title || typeof title !== 'string') {
+      return NextResponse.json({ error: 'Title is required and must be a string' }, { status: 400 });
+    }
+    if (title.length > 200) {
+      return NextResponse.json({ error: 'Title too long (max 200 characters)' }, { status: 400 });
+    }
+    if (title.trim().length === 0) {
+      return NextResponse.json({ error: 'Title cannot be empty' }, { status: 400 });
+    }
+
+    // Validate mode
+    if (!mode) {
+      return NextResponse.json({ error: 'Mode is required' }, { status: 400 });
     }
 
     const { data: conversation, error } = await supabase

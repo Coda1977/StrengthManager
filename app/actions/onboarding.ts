@@ -26,10 +26,12 @@ export async function completeOnboarding(formData: FormData) {
   }
 
   // Update user profile with strengths
-  const { error: updateError } = await supabase
+  const updateResult: any = await supabase
     .from('users')
     .update({ top_5_strengths: strengths } as any)
     .eq('id', user.id);
+  
+  const { error: updateError } = updateResult;
 
   if (updateError) {
     return { error: updateError.message };

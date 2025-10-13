@@ -23,10 +23,8 @@ ALTER TABLE public.ai_usage_logs ENABLE ROW LEVEL SECURITY;
 -- Policy: Admins can view all AI usage logs
 CREATE POLICY "Admins can view all AI usage logs" ON public.ai_usage_logs
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin'
+    OR auth.uid() = user_id
   );
 
 -- Policy: System can insert AI usage logs (no auth required for logging)

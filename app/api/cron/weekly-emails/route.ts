@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processWeeklyEmails } from '@/lib/email/email-service';
+import { verifyAdmin } from '@/lib/auth/admin-middleware';
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,12 +45,10 @@ export async function GET(request: NextRequest) {
 // Also support POST for manual triggering from admin dashboard
 export async function POST(request: NextRequest) {
   try {
-    // For POST, check if user is admin instead of cron secret
-    const body = await request.json();
-    const { adminSecret } = body;
-
-    if (adminSecret !== process.env.CRON_SECRET) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Verify admin authentication
+    const authResult = await verifyAdmin();
+    if (!authResult.authorized) {
+      return authResult.response;
     }
 
     console.log('Manually triggering weekly email processing...');

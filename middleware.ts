@@ -60,7 +60,10 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check admin role for admin routes
-  if (isAdminRoute && user) {
+  if (isAdminRoute) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
     const { data: userData } = await supabase
       .from('users')
       .select('role')

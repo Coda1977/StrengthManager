@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id: userId } = await params;
   // Verify admin access
   const authResult = await verifyAdmin();
   if (!authResult.authorized) {
@@ -13,7 +14,6 @@ export async function GET(
   }
 
   const supabase = await createClient();
-  const userId = params.id;
 
   try {
     // Get user info
@@ -51,29 +51,20 @@ export async function GET(
       .order('sent_at', { ascending: false })
       .limit(10);
 
-    // Get chat conversations count
-    const { count: conversationsCount } = await supabase
-      .from('chat_conversations')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId);
+    // Get conversation and message counts in parallel (optimized from 3 queries to 2)
+    const [conversationsResult, messagesResult] = await Promise.all([
+      supabase
+        .from('chat_conversations')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId),
+      supabase
+        .from('chat_conversations')
+        .select('chat_messages(id)', { count: 'exact', head: true })
+        .eq('user_id', userId)
+    ]);
 
-    // Get total messages count
-    // First get conversation IDs
-    const { data: userConversations } = await supabase
-      .from('chat_conversations')
-      .select('id')
-      .eq('user_id', userId);
-
-    const conversationIds = (userConversations || []).map((c: any) => c.id);
-    
-    let messagesCount = 0;
-    if (conversationIds.length > 0) {
-      const { count } = await supabase
-        .from('chat_messages')
-        .select('*', { count: 'exact', head: true })
-        .in('conversation_id', conversationIds);
-      messagesCount = count || 0;
-    }
+    const conversationsCount = conversationsResult.count || 0;
+    const messagesCount = messagesResult.count || 0;
 
     // Get AI usage summary
     const { data: aiUsage } = await supabase
@@ -109,8 +100,9 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id: userId } = await params;
   // Verify admin access
   const authResult = await verifyAdmin();
   if (!authResult.authorized) {
@@ -118,7 +110,6 @@ export async function DELETE(
   }
 
   const supabase = await createClient();
-  const userId = params.id;
 
   try {
     // Verify user exists

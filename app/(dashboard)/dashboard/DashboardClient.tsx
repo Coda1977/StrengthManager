@@ -227,7 +227,10 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
     }));
   };
 
-  const domainDistribution = calculateDomainDistribution();
+  const domainDistribution = useMemo(
+    () => calculateDomainDistribution(),
+    [initialUserData.top_5_strengths, teamMembers]
+  );
   
   // Generate team insight
   const generateTeamInsight = async () => {

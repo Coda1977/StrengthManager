@@ -1,5 +1,4 @@
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Note: gen_random_uuid() is built into PostgreSQL 13+ and doesn't require extensions
 
 -- Create users table (extends Supabase auth.users)
 CREATE TABLE IF NOT EXISTS public.users (
@@ -14,7 +13,7 @@ CREATE TABLE IF NOT EXISTS public.users (
 
 -- Create team_members table
 CREATE TABLE IF NOT EXISTS public.team_members (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   top_5_strengths TEXT[] NOT NULL,
@@ -25,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.team_members (
 
 -- Create strengths reference table
 CREATE TABLE IF NOT EXISTS public.strengths (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT UNIQUE NOT NULL,
   domain TEXT NOT NULL CHECK (domain IN ('Executing', 'Influencing', 'Relationship Building', 'Strategic Thinking')),
   description TEXT NOT NULL,
@@ -35,7 +34,7 @@ CREATE TABLE IF NOT EXISTS public.strengths (
 
 -- Create chat_conversations table
 CREATE TABLE IF NOT EXISTS public.chat_conversations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   mode TEXT NOT NULL CHECK (mode IN ('my-strengths', 'team-strengths')),
@@ -45,7 +44,7 @@ CREATE TABLE IF NOT EXISTS public.chat_conversations (
 
 -- Create chat_messages table
 CREATE TABLE IF NOT EXISTS public.chat_messages (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   conversation_id UUID NOT NULL REFERENCES public.chat_conversations(id) ON DELETE CASCADE,
   role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
   content TEXT NOT NULL,
@@ -54,7 +53,7 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
 
 -- Create analytics_events table
 CREATE TABLE IF NOT EXISTS public.analytics_events (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   event_type TEXT NOT NULL,
   metadata JSONB,
@@ -63,7 +62,7 @@ CREATE TABLE IF NOT EXISTS public.analytics_events (
 
 -- Create email_preferences table
 CREATE TABLE IF NOT EXISTS public.email_preferences (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID UNIQUE NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   frequency TEXT DEFAULT 'weekly' CHECK (frequency IN ('weekly', 'biweekly', 'monthly')),
   paused BOOLEAN DEFAULT FALSE,

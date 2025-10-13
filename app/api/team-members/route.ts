@@ -22,7 +22,7 @@ export async function GET() {
     }
 
     // Transform to match frontend interface
-    const formattedMembers = teamMembers?.map(member => ({
+    const formattedMembers = teamMembers?.map((member: { id: string; name: string; top_5_strengths: string[]; notes: string | null }) => ({
       id: member.id,
       name: member.name,
       strengths: member.top_5_strengths,
@@ -49,8 +49,26 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, strengths } = body;
 
-    if (!name || !strengths || !Array.isArray(strengths)) {
-      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    // Validate name
+    if (!name || typeof name !== 'string') {
+      return NextResponse.json({ error: 'Name is required and must be a string' }, { status: 400 });
+    }
+    if (name.length > 100) {
+      return NextResponse.json({ error: 'Name too long (max 100 characters)' }, { status: 400 });
+    }
+    if (name.trim().length === 0) {
+      return NextResponse.json({ error: 'Name cannot be empty' }, { status: 400 });
+    }
+
+    // Validate strengths array
+    if (!Array.isArray(strengths)) {
+      return NextResponse.json({ error: 'Strengths must be an array' }, { status: 400 });
+    }
+    if (strengths.length !== 5) {
+      return NextResponse.json({ error: 'Must provide exactly 5 strengths' }, { status: 400 });
+    }
+    if (!strengths.every(s => typeof s === 'string' && s.length > 0 && s.length < 50)) {
+      return NextResponse.json({ error: 'Each strength must be a non-empty string (max 50 characters)' }, { status: 400 });
     }
 
     const { data: newMember, error } = await supabase
@@ -74,10 +92,12 @@ export async function POST(request: NextRequest) {
       metadata: { member_name: name, strengths_count: strengths.length },
     } as any);
 
+    const typedMember = newMember as { id: string; name: string; top_5_strengths: string[] };
+    
     return NextResponse.json({
-      id: newMember.id,
-      name: newMember.name,
-      strengths: newMember.top_5_strengths
+      id: typedMember.id,
+      name: typedMember.name,
+      strengths: typedMember.top_5_strengths
     });
   } catch (error) {
     console.error('Error adding team member:', error);

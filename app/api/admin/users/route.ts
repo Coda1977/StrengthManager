@@ -14,7 +14,9 @@ export async function GET(request: NextRequest) {
 
   // Parse query parameters
   const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '20');
+  const requestedLimit = parseInt(searchParams.get('limit') || '20');
+  // Cap limit at 100 to prevent performance issues
+  const limit = Math.min(requestedLimit, 100);
   const search = searchParams.get('search') || '';
   const role = searchParams.get('role') || 'all';
   const emailStatus = searchParams.get('emailStatus') || 'all';
@@ -27,7 +29,9 @@ export async function GET(request: NextRequest) {
 
     // Apply search filter
     if (search) {
-      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`);
+      // Escape special SQL LIKE characters (% and _)
+      const sanitized = search.replace(/[%_]/g, '\\$&');
+      query = query.or(`name.ilike.%${sanitized}%,email.ilike.%${sanitized}%`);
     }
 
     // Apply role filter

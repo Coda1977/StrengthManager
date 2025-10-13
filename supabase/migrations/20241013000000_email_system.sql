@@ -78,14 +78,12 @@ CREATE POLICY "System can insert email subscriptions"
   FOR INSERT 
   WITH CHECK (true);
 
-CREATE POLICY "Admins can view all email subscriptions" 
+CREATE POLICY "Admins can view all email subscriptions"
   ON public.email_subscriptions
-  FOR SELECT 
+  FOR SELECT
   USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin'
+    OR auth.uid() = user_id
   );
 
 -- RLS Policies for email_logs
@@ -99,14 +97,12 @@ CREATE POLICY "System can insert email logs"
   FOR INSERT 
   WITH CHECK (true);
 
-CREATE POLICY "Admins can view all email logs" 
+CREATE POLICY "Admins can view all email logs"
   ON public.email_logs
-  FOR SELECT 
+  FOR SELECT
   USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin'
+    OR auth.uid() = user_id
   );
 
 -- RLS Policies for unsubscribe_tokens
