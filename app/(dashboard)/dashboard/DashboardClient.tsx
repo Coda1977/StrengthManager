@@ -324,17 +324,17 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
         <div style={{
           background: '#fff',
           borderRadius: '24px',
-          padding: '2rem',
+          padding: '1.5rem',
           marginBottom: '2rem',
           boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
           display: 'flex',
           flexDirection: 'column',
           gap: '1.5rem',
         }}>
-          <div style={{ fontWeight: 700, fontSize: '2rem', color: '#181818' }}>
+          <div style={{ fontWeight: 700, fontSize: 'clamp(1.5rem, 5vw, 2rem)', color: '#181818' }}>
             My Top 5 Strengths
           </div>
-          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             {initialUserData.top_5_strengths && initialUserData.top_5_strengths.length > 0 ? (
               initialUserData.top_5_strengths.slice(0, 5).map((strength: string) => (
                 <span
@@ -344,9 +344,9 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
                     background: '#FFD600',
                     color: '#181818',
                     fontWeight: 600,
-                    fontSize: '1.15rem',
-                    borderRadius: '24px',
-                    padding: '0.5rem 1.5rem',
+                    fontSize: 'clamp(0.9rem, 3vw, 1.15rem)',
+                    borderRadius: '20px',
+                    padding: '0.5rem 1rem',
                     display: 'inline-block',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
@@ -549,8 +549,8 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
                   onMouseOver={(e) => !loadingTeamInsight && (e.currentTarget.style.background = '#002244')}
                   onMouseOut={(e) => !loadingTeamInsight && (e.currentTarget.style.background = '#003566')}
                 >
-                  {loadingTeamInsight ? 'Generating...' : 'Refresh (3 left)'}
-                </button>
+                 {loadingTeamInsight ? 'Generating...' : 'Refresh'}
+               </button>
               </div>
               
               {loadingTeamInsight ? (

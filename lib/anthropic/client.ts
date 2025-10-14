@@ -100,7 +100,7 @@ export async function streamChatResponse(
 ) {
   const stream = anthropic.messages.stream({
     model: CLAUDE_MODEL,
-    max_tokens: 1024,
+    max_tokens: 850, // Reduced by ~17% for more concise responses
     system: systemPrompt,
     messages: messages.map(msg => ({
       role: msg.role,
@@ -151,7 +151,7 @@ Format as JSON:
   try {
     const response = await anthropic.messages.create({
       model: CLAUDE_MODEL,
-      max_tokens: 500,
+      max_tokens: 425, // Reduced by 15% for more concise weekly tips
       messages: [{ role: 'user', content: prompt }],
     });
 
@@ -211,7 +211,7 @@ Focus on how their strengths complement each other and one specific action to ma
   try {
     const response = await anthropic.messages.create({
       model: CLAUDE_MODEL,
-      max_tokens: 300,
+      max_tokens: 255, // Reduced by 15% for more concise synergy tips
       messages: [{ role: 'user', content: prompt }],
     });
 

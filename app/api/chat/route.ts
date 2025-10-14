@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     // Generate response with Claude
     const response = await anthropic.messages.create({
       model: CLAUDE_MODEL,
-      max_tokens: 1024,
+      max_tokens: 850, // Reduced by ~17% for more concise responses
       system: systemPrompt,
       messages: messages as any,
     });
@@ -109,6 +109,7 @@ function buildPersonalStrengthsPrompt(userStrengths: string[]): string {
 - **Specific**: Use concrete examples rather than generic advice
 - **Challenging**: Don't just affirm - push managers to grow and see new perspectives
 - **Human**: Acknowledge the messiness of real workplace dynamics
+- **Concise**: Aim for around 400 tokens when possible, unless the complexity of the question requires more detail
 
 **Manager's Top 5 Strengths**: ${userStrengths.join(', ')}
 
@@ -142,6 +143,7 @@ function buildTeamStrengthsPrompt(userStrengths: string[], teamMembers: Array<{ 
 - **Specific**: Use names, situations, and concrete examples
 - **Challenging**: Don't just affirm - push managers to grow
 - **Human**: Acknowledge the messiness of real workplace dynamics
+- **Concise**: Aim for around 400 tokens when possible, unless the complexity of the question requires more detail
 
 **Manager's Top 5 Strengths**: ${userStrengths.join(', ')}
 

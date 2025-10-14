@@ -29,7 +29,8 @@ export default function LoginPage() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '2rem 1rem'
+      padding: '2rem 1rem',
+      overflow: 'hidden'
     }}>
       <div style={{ width: '100%', maxWidth: '500px' }}>
         {/* Header */}

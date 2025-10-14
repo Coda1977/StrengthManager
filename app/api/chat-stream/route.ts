@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Create streaming response
     const stream = await anthropic.messages.stream({
       model: CLAUDE_MODEL,
-      max_tokens: 1024,
+      max_tokens: 850, // Reduced by ~17% for more concise responses
       system: systemPrompt,
       messages: messages as any,
     });
@@ -102,6 +102,7 @@ function buildPersonalStrengthsPrompt(userStrengths: string[], teamMembers: any[
 - **Specific**: Use concrete examples and team member names when relevant
 - **Challenging**: Don't just affirm - push managers to grow and see new perspectives
 - **Human**: Acknowledge the messiness of real workplace dynamics
+- **Concise**: Aim for around 400 tokens when possible, unless the complexity of the question requires more detail
 
 **Manager's Top 5 Strengths**: ${userStrengths.join(', ')}
 

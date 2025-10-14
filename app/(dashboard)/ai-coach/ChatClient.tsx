@@ -584,9 +584,10 @@ export default function ChatClient() {
         maxWidth: '900px',
         margin: '0 auto',
         width: '100%',
-        padding: '2rem',
+        padding: '2rem 1rem',
         paddingBottom: '10rem',
-        minHeight: 'calc(100vh - 80px)'
+        minHeight: 'calc(100vh - 80px)',
+        overflowX: 'hidden'
       }}>
         {/* Header with History Button */}
         <div style={{
@@ -666,7 +667,8 @@ export default function ChatClient() {
                   flexDirection: 'column',
                   gap: '1rem',
                   maxWidth: '700px',
-                  margin: '0 auto'
+                  margin: '0 auto',
+                  width: '100%'
                 }}>
                   {starterQuestions.map((q, idx) => (
                     <button
@@ -685,7 +687,9 @@ export default function ChatClient() {
                         cursor: 'pointer',
                         textAlign: 'left',
                         transition: 'all 0.2s ease',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                        width: '100%',
+                        wordWrap: 'break-word'
                       }}
                       onMouseOver={(e) => {
                         e.currentTarget.style.borderColor = '#003566';
@@ -736,12 +740,15 @@ export default function ChatClient() {
                     {(msg.type === 'user' || msg.content) && (
                       <div style={{ flex: 1 }}>
                         <div style={{
-                          background: '#FFFFFF',
-                          borderRadius: '16px',
-                          padding: '1rem 1.5rem',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                          marginBottom: msg.type === 'ai' ? '0.5rem' : '0'
-                        }}>
+                         background: '#FFFFFF',
+                         borderRadius: '16px',
+                         padding: '1rem 1.5rem',
+                         boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                         marginBottom: msg.type === 'ai' ? '0.5rem' : '0',
+                         maxWidth: '100%',
+                         overflowWrap: 'break-word',
+                         wordBreak: 'break-word'
+                       }}>
                         {msg.type === 'user' ? (
                           <div style={{
                             fontSize: '15px',
@@ -815,13 +822,14 @@ export default function ChatClient() {
                   
                   {/* Follow-up Questions */}
                   {msg.type === 'ai' && followUpQuestions[msg.id] && followUpQuestions[msg.id].length > 0 && (
-                    <div style={{
-                      marginLeft: '56px',
-                      marginBottom: '1.5rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.5rem'
-                    }}>
+                   <div style={{
+                     marginLeft: '56px',
+                     marginBottom: '1.5rem',
+                     display: 'flex',
+                     flexDirection: 'column',
+                     gap: '0.5rem',
+                     maxWidth: 'calc(100% - 56px)'
+                   }}>
                       {followUpQuestions[msg.id].map((q, idx) => (
                         <button
                           key={idx}
@@ -838,7 +846,9 @@ export default function ChatClient() {
                             color: '#1A1A1A',
                             cursor: 'pointer',
                             textAlign: 'left',
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.2s ease',
+                            width: '100%',
+                            wordWrap: 'break-word'
                           }}
                           onMouseOver={(e) => {
                             e.currentTarget.style.background = '#E8DFD0';
@@ -953,7 +963,7 @@ export default function ChatClient() {
         right: 0,
         background: '#F5F0E8',
         borderTop: '1px solid #E5E7EB',
-        padding: '1.5rem',
+        padding: '1rem',
         zIndex: 50
       }}>
         <div style={{
@@ -961,11 +971,12 @@ export default function ChatClient() {
           margin: '0 auto',
           background: '#FFFFFF',
           borderRadius: '24px',
-          padding: '1rem',
+          padding: '0.75rem 1rem',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           display: 'flex',
-          gap: '1rem',
-          alignItems: 'flex-end'
+          gap: '0.75rem',
+          alignItems: 'flex-end',
+          width: 'calc(100% - 2rem)'
         }}>
           <textarea
             ref={textareaRef}
