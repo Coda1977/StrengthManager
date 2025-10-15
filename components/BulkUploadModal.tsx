@@ -174,7 +174,8 @@ export default function BulkUploadModal({ onClose, onUpload, allStrengths }: Bul
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
-        padding: '1rem'
+        padding: '1rem',
+        boxSizing: 'border-box'
       }}
       onClick={onClose}
     >
@@ -189,7 +190,8 @@ export default function BulkUploadModal({ onClose, onUpload, allStrengths }: Bul
           maxHeight: '90vh',
           overflowY: 'auto',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
-          position: 'relative'
+          position: 'relative',
+          boxSizing: 'border-box'
         }}
       >
         <button

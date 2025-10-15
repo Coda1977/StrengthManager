@@ -726,7 +726,8 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 1000,
-          padding: '1rem'
+          padding: '1rem',
+          boxSizing: 'border-box'
         }}>
           <div style={{
             backgroundColor: '#FFFFFF',
@@ -737,7 +738,8 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
             maxHeight: '90vh',
             overflowY: 'auto',
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
-            position: 'relative'
+            position: 'relative',
+            boxSizing: 'border-box'
           }}>
             <button
               onClick={resetModal}
@@ -786,7 +788,8 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
                   borderRadius: '30px',
                   fontSize: '16px',
                   outline: 'none',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.3s ease',
+                  boxSizing: 'border-box'
                 }}
                 onFocus={(e) => {
                   e.target.style.borderColor = '#003566';
@@ -823,7 +826,8 @@ export default function DashboardClient({ initialUserData, initialTeamMembers }:
                   fontSize: '16px',
                   marginBottom: '1rem',
                   outline: 'none',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.3s ease',
+                  boxSizing: 'border-box'
                 }}
                 onFocus={(e) => {
                   e.target.style.borderColor = '#003566';

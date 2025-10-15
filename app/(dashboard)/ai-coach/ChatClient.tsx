@@ -51,12 +51,13 @@ export default function ChatClient() {
     fetchStarterQuestions();
   }, []);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom only when user is near bottom
   useEffect(() => {
-    if (!showScrollButton) {
+    if (!showScrollButton && !isTyping) {
+      // Only auto-scroll when not typing (after message is complete)
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, showScrollButton]);
+  }, [messages.length, showScrollButton, isTyping]);
 
   // Auto-resize textarea
   const autoResizeTextarea = useCallback(() => {

@@ -109,7 +109,8 @@ export default function SignupPage() {
                   borderRadius: '12px',
                   backgroundColor: '#FFFFFF',
                   outline: 'none',
-                  transition: 'border-color 0.2s ease'
+                  transition: 'border-color 0.2s ease',
+                  boxSizing: 'border-box'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#003566'}
                 onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
@@ -140,7 +141,8 @@ export default function SignupPage() {
                   borderRadius: '12px',
                   backgroundColor: '#FFFFFF',
                   outline: 'none',
-                  transition: 'border-color 0.2s ease'
+                  transition: 'border-color 0.2s ease',
+                  boxSizing: 'border-box'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#003566'}
                 onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
@@ -172,7 +174,8 @@ export default function SignupPage() {
                   borderRadius: '12px',
                   backgroundColor: '#FFFFFF',
                   outline: 'none',
-                  transition: 'border-color 0.2s ease'
+                  transition: 'border-color 0.2s ease',
+                  boxSizing: 'border-box'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#003566'}
                 onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
@@ -207,7 +210,8 @@ export default function SignupPage() {
                   borderRadius: '12px',
                   backgroundColor: '#FFFFFF',
                   outline: 'none',
-                  transition: 'border-color 0.2s ease'
+                  transition: 'border-color 0.2s ease',
+                  boxSizing: 'border-box'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#003566'}
                 onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
