@@ -359,7 +359,9 @@ export default function ChatClient() {
       minHeight: '100vh',
       background: '#F5F0E8',
       position: 'relative',
-      paddingTop: '80px'
+      paddingTop: '80px',
+      overflowX: 'hidden',
+      width: '100%'
     }}>
       {/* Copy Toast */}
       {showCopyToast && (
@@ -588,7 +590,8 @@ export default function ChatClient() {
         padding: '2rem 1rem',
         paddingBottom: '10rem',
         minHeight: 'calc(100vh - 80px)',
-        overflowX: 'hidden'
+        overflowX: 'hidden',
+        boxSizing: 'border-box'
       }}>
         {/* Header with History Button */}
         <div style={{
@@ -965,10 +968,11 @@ export default function ChatClient() {
         background: '#F5F0E8',
         borderTop: '1px solid #E5E7EB',
         padding: '1rem',
-        zIndex: 50
+        zIndex: 50,
+        boxSizing: 'border-box'
       }}>
         <div style={{
-          maxWidth: '900px',
+          maxWidth: 'min(900px, calc(100% - 2rem))',
           margin: '0 auto',
           background: '#FFFFFF',
           borderRadius: '24px',
@@ -977,7 +981,8 @@ export default function ChatClient() {
           display: 'flex',
           gap: '0.75rem',
           alignItems: 'flex-end',
-          width: 'calc(100% - 2rem)'
+          width: '100%',
+          boxSizing: 'border-box'
         }}>
           <textarea
             ref={textareaRef}
