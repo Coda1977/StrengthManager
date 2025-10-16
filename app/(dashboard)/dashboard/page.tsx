@@ -45,7 +45,6 @@ export default async function DashboardPage() {
     .single() as any;
 
   if (userError || !userData) {
-    console.error('Error fetching user data:', userError);
     redirect('/onboarding');
   }
 

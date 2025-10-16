@@ -7,9 +7,9 @@ if (!process.env.RESEND_API_KEY) {
 export const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email configuration
-// Using Resend's test domain for now - update to your verified domain later
+// Using verified domain: stronger.tinymanager.ai
 export const EMAIL_CONFIG = {
-  from: 'Strength Manager <onboarding@resend.dev>',
+  from: 'Strength Manager <noreply@stronger.tinymanager.ai>',
   replyTo: 'tinymanagerai@gmail.com',
 } as const;
 
@@ -137,7 +137,7 @@ export async function sendWelcomeEmail(to: string, name: string) {
   try {
     const template = emailTemplates.welcome(name);
     const { data, error } = await resend.emails.send({
-      from: 'Strength Manager <onboarding@strengthmanager.com>',
+      from: EMAIL_CONFIG.from,
       to,
       subject: template.subject,
       html: template.html,
@@ -166,7 +166,7 @@ export async function sendWeeklyTipsEmail(
   try {
     const template = emailTemplates.weeklyTips(name, personalTip, teamTip);
     const { data, error } = await resend.emails.send({
-      from: 'Strength Manager <tips@strengthmanager.com>',
+      from: EMAIL_CONFIG.from,
       to,
       subject: template.subject,
       html: template.html,
