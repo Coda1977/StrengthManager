@@ -1,0 +1,64 @@
+name: Keep Supabase Active
+
+on:
+  schedule:
+    # Run every 3 days at 3:00 AM UTC (5:00 AM Israel time)
+    # This prevents the 7-day inactivity auto-pause on Supabase free tier
+    - cron: '0 3 */3 * *'
+  
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Ping Supabase Project
+      run: |
+        echo "🏓 Pinging Supabase project to keep it active..."
+        
+        # Make a simple request to Supabase REST API health endpoint
+        # This counts as activity and prevents auto-pause
+        response=$(curl -s -o /dev/null -w "%{http_code}" \
+          -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
+          "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/")
+        
+        echo "Response code: $response"
+        
+        if [ "$response" -eq 200 ] || [ "$response" -eq 401 ]; then
+          echo "✅ Supabase project is active and responding"
+        else
+          echo "⚠️ Unexpected response code: $response"
+          echo "Project may need manual attention"
+        fi
+    
+    - name: Ping Application (if deployed)
+      continue-on-error: true
+      run: |
+        echo "🌐 Pinging production application..."
+        
+        # If you have a deployed app URL, ping it too
+        # Replace with your actual production URL if available
+        if [ -n "${{ secrets.PRODUCTION_URL }}" ]; then
+          app_response=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.PRODUCTION_URL }}")
+          echo "App response code: $app_response"
+          
+          if [ "$app_response" -eq 200 ]; then
+            echo "✅ Application is responding"
+          else
+            echo "⚠️ Application returned: $app_response"
+          fi
+        else
+          echo "ℹ️ No production URL configured (optional)"
+        fi
+    
+    - name: Summary
+      run: |
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "Keep-Alive Check Complete"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "Next scheduled run: in 3 days"
+        echo "Supabase will not auto-pause due to inactivity"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
