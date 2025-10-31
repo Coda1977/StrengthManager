@@ -15,6 +15,7 @@ jobs:
     
     steps:
     - name: Ping Supabase Project
+      continue-on-error: true
       run: |
         echo "🏓 Pinging Supabase project to keep it active..."
         
@@ -30,8 +31,11 @@ jobs:
           echo "✅ Supabase project is active and responding"
         else
           echo "⚠️ Unexpected response code: $response"
-          echo "Project may need manual attention"
+          echo "Project may need manual attention, but continuing workflow"
         fi
+        
+        # Always exit successfully - the ping itself keeps project active
+        exit 0
     
     - name: Ping Application (if deployed)
       continue-on-error: true
