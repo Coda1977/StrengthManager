@@ -4,12 +4,18 @@ This guide explains how to use the GitHub Actions workflow to keep your Supabase
 
 ## How It Works
 
-The workflow ([`.github/workflows/keep-alive.yml`](.github/workflows/keep-alive.yml:1)) automatically pings your Supabase project every 3 days to count as "activity" and prevent the 7-day inactivity auto-pause.
+The enhanced workflow ([`.github/workflows/keep-alive.yml`](.github/workflows/keep-alive.yml:1)) performs multiple database queries every 2 days to ensure real database activity and prevent the 7-day inactivity auto-pause.
 
 ### Schedule
-- **Frequency**: Every 3 days
+- **Frequency**: Every 2 days (improved from 3 days)
 - **Time**: 3:00 AM UTC (5:00 AM Israel time)
 - **Manual Trigger**: Available via GitHub Actions UI
+
+### Enhanced Activity
+- **Multiple database queries**: Tests users, strengths, and email_logs tables
+- **Real database activity**: Actual SELECT queries instead of just API pings
+- **Better monitoring**: Detailed logging and success tracking
+- **Comprehensive coverage**: Tests both database and application health
 
 ## Setup Instructions
 
