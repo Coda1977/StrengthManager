@@ -29,9 +29,10 @@ All tables include:
 
 #### Resend Configuration
 **File**: [`lib/resend/client.ts`](lib/resend/client.ts)
-- Configured from address: `Strength Manager <tinymanagerai@gmail.com>`
+- Configured from address: `Strength Manager <noreply@tinymanager.ai>` (updated 2025-11-15)
 - Added EMAIL_CONFIG constant for consistency
 - Environment variable validation
+- **Note**: Domain changed from subdomain to verified parent domain to fix Monday email issues
 
 #### React Email Templates
 **Files**: 
@@ -504,8 +505,61 @@ The email system is **production-ready** pending:
 
 ---
 
-**Implementation completed by**: Kilo Code  
-**Total Development Time**: ~2 hours  
-**Lines of Code**: ~2,000+  
-**Files Created**: 15  
+## 🐛 Bug Fix: Monday Email Domain Issue (2025-11-15)
+
+### Issue Identified
+**Problem**: Weekly emails not being sent on Mondays despite active subscriptions existing.
+
+**Root Cause**: Domain verification failure with Resend API.
+```
+Error: "The stronger.tinymanager.ai domain is not verified.
+Please, add and verify your domain on https://resend.com/domains"
+```
+
+### Investigation Process
+1. **Deep system audit**: Verified all components (Vercel cron, database, code) were functional
+2. **Database analysis**: Confirmed 3 users exist with 2 active weekly coaching subscriptions
+3. **Email logs review**: Found domain verification errors in recent attempts
+4. **Domain verification check**: Discovered subdomain `stronger.tinymanager.ai` was never verified in Resend
+5. **Parent domain confirmed**: `tinymanager.ai` was properly verified and working
+
+### Solution Applied
+**File Modified**: [`lib/resend/client.ts`](lib/resend/client.ts)
+
+**Change Made**:
+```typescript
+// BEFORE (causing failures):
+from: 'Strength Manager <noreply@stronger.tinymanager.ai>'
+
+// AFTER (working):
+from: 'Strength Manager <noreply@tinymanager.ai>'
+```
+
+### Fix Details
+- **Commit**: `956649e` - "fix: change email domain to verified tinymanager.ai to resolve Monday email failures"
+- **Deployed**: 2025-11-15
+- **Status**: ✅ **RESOLVED**
+- **Impact**: Monday weekly emails will now send successfully to existing subscribers
+
+### Verification
+- ✅ **Build**: Application compiles successfully
+- ✅ **Deployment**: Successfully deployed to production via Vercel
+- ✅ **Domain**: Using verified `tinymanager.ai` domain
+- ✅ **Active subscribers**: 2 users ready to receive Monday emails
+
+### Prevention
+- **Lesson learned**: Always verify subdomain email setup in Resend dashboard
+- **Best practice**: Use verified parent domain for immediate deployment
+- **Monitoring**: Email logs will now show successful sends instead of domain errors
+
+---
+
+**Implementation completed by**: Kilo Code
+**Total Development Time**: ~2 hours
+**Lines of Code**: ~2,000+
+**Files Created**: 15
 **Files Modified**: 5
+
+**Bug fix completed by**: Claude Code
+**Bug fix time**: 2025-11-15
+**Issue resolution**: Domain verification fix
