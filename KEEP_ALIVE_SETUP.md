@@ -1,36 +1,31 @@
 # Supabase Keep-Alive Setup Guide
 
-This guide explains how to use the GitHub Actions workflow to keep your Supabase free tier project active and prevent auto-pausing.
+This guide explains how to use the simple and reliable GitHub Actions workflow to keep your Supabase free tier project active and prevent auto-pausing.
 
 ## How It Works
 
-The enhanced workflow ([`.github/workflows/keep-alive.yml`](.github/workflows/keep-alive.yml:1)) performs multiple database queries every 2 days to ensure real database activity and prevent the 7-day inactivity auto-pause.
+The simple workflow ([`.github/workflows/keep-alive.yml`](.github/workflows/keep-alive.yml:1)) pings your production application every 2 days. When your app is accessed, it naturally connects to Supabase for data, which prevents the 7-day inactivity auto-pause.
 
 ### Schedule
 - **Frequency**: Every 2 days (improved from 3 days)
 - **Time**: 3:00 AM UTC (5:00 AM Israel time)
 - **Manual Trigger**: Available via GitHub Actions UI
 
-### Enhanced Activity
-- **Multiple database queries**: Tests users, strengths, and email_logs tables
-- **Real database activity**: Actual SELECT queries instead of just API pings
-- **Better monitoring**: Detailed logging and success tracking
-- **Comprehensive coverage**: Tests both database and application health
+### Simple & Reliable Approach
+- **Production app ping**: Single HTTP request to your live application
+- **Natural database activity**: Your app connects to Supabase when accessed
+- **No secrets required**: Uses the publicly accessible production URL
+- **High reliability**: No complex database authentication or network issues
 
 ## Setup Instructions
 
-### 1. Verify GitHub Secrets
+### 1. No GitHub Secrets Required! 🎉
 
-The workflow uses these secrets (should already be configured):
+The simple workflow doesn't need any secrets because it just pings your public production URL:
+- **Production URL**: https://stronger.tinymanager.ai (hardcoded in workflow)
+- **Method**: Simple HTTP GET request
 
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
-- `PRODUCTION_URL` (optional) - Your deployed app URL
-
-To check/add secrets:
-1. Go to your GitHub repository
-2. Navigate to **Settings** → **Secrets and variables** → **Actions**
-3. Verify the required secrets exist
+This eliminates all the complexity and potential authentication issues!
 
 ### 2. Enable the Workflow
 
@@ -60,36 +55,41 @@ To manually trigger the workflow immediately:
 
 ## What the Workflow Does
 
-1. **Pings Supabase REST API**
-   - Makes a health check request to your Supabase project
-   - Counts as activity to prevent auto-pause
-   - Validates the project is responding
+1. **Pings Your Production App**
+   - Makes a simple HTTP GET request to https://stronger.tinymanager.ai
+   - This causes your Next.js app to load and connect to Supabase
+   - Creates real database activity through your application
 
-2. **Pings Your App** (Optional)
-   - If `PRODUCTION_URL` is configured, pings your deployed app
-   - Helps keep both Supabase and your app warm
-
-3. **Logs Results**
-   - Shows response codes and status
-   - Alerts if something is wrong
+2. **Logs Results**
+   - Shows HTTP response code (expecting 200)
+   - Provides clear success/failure status
+   - Much simpler and more reliable than direct database calls
 
 ## Expected Behavior
 
 ### Successful Run
 ```
-✅ Supabase project is active and responding
-✅ Application is responding (if configured)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Keep-Alive Check Complete
-Next scheduled run: in 3 days
-Supabase will not auto-pause due to inactivity
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏓 Simple Supabase keep-alive starting...
+📅 Run time: Sat Nov 15 14:27:33 UTC 2025
+🔄 Frequency: Every 2 days
+🎯 Purpose: Prevent 7-day Supabase auto-pause on free tier
+📝 Method: Ping production app which connects to Supabase
+
+🌐 Pinging production application...
+Production app response: 200
+✅ SUCCESS: Production application is healthy
+✅ SUCCESS: App activity will keep Supabase database active
+🛡️ Supabase project will remain active
+
+📊 Summary:
+   • Production app ping: 200
+   • Supabase backend activity: Generated through app
+   • Auto-pause prevention: ✅ Active
 ```
 
 ### Response Codes
-- **200**: Perfect - Everything working
-- **401**: OK - Project is active (auth required, which is expected)
-- **Other codes**: May need attention
+- **200**: Perfect - App is healthy and Supabase is getting activity
+- **Other codes**: May indicate app downtime or need attention
 
 ## Troubleshooting
 

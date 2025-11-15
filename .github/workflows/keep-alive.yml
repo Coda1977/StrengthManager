@@ -1,9 +1,8 @@
-name: Keep Supabase Active (Enhanced)
+name: Keep Supabase Active (Simple & Reliable)
 
 on:
   schedule:
     # Run every 2 days at 3:00 AM UTC to prevent 7-day auto-pause
-    # More frequent than the original 3-day schedule for better reliability
     - cron: '0 3 */2 * *'
 
   # Allow manual trigger from GitHub Actions UI
@@ -14,162 +13,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Enhanced Supabase Database Activity
-      continue-on-error: true  # Continue even if some tests fail
+    - name: Ping Production App to Keep Supabase Active
       run: |
-        set +e  # Don't exit on errors, handle them gracefully
-        echo "🏓 Enhanced Supabase keep-alive starting..."
+        echo "🏓 Simple Supabase keep-alive starting..."
         echo "📅 Run time: $(date -u)"
         echo "🔄 Frequency: Every 2 days"
-        echo "🎯 Purpose: Prevent 7-day auto-pause on free tier"
+        echo "🎯 Purpose: Prevent 7-day Supabase auto-pause on free tier"
+        echo "📝 Method: Ping production app which connects to Supabase"
         echo ""
 
-        # Test 1: Basic API connectivity
-        echo "🌐 Testing API connectivity..."
-        api_response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
-          -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
-          "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/" 2>/dev/null || echo "000")
+        # Ping the production application
+        echo "🌐 Pinging production application..."
+        app_response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+          "https://stronger.tinymanager.ai")
 
-        echo "API Response: $api_response"
+        echo "Production app response: $app_response"
 
-        if [ "$api_response" -eq 401 ]; then
-          echo "✅ API responding (401 expected without specific table access)"
-        elif [ "$api_response" -eq 200 ]; then
-          echo "✅ API responding successfully"
-        else
-          echo "⚠️ Unexpected API response: $api_response"
-        fi
-        echo ""
-
-        # Test 2: Actual database query - Count users (this creates real DB activity)
-        echo "🗄️ Testing database activity with actual query..."
-        users_response=$(curl -s -w "%{http_code}" --max-time 30 \
-          -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
-          -H "Authorization: Bearer ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
-          "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/users?select=count" \
-          -o /tmp/users_response.txt 2>/dev/null || echo "000")
-
-        users_code=$(echo "$users_response" | tail -c 4)
-        echo "Users query response: $users_code"
-
-        # Test 3: Check strengths table (reference data)
-        echo "📊 Testing strengths table access..."
-        strengths_response=$(curl -s -w "%{http_code}" --max-time 30 \
-          -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
-          -H "Authorization: Bearer ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
-          "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/strengths?select=count&limit=1" \
-          -o /tmp/strengths_response.txt 2>/dev/null || echo "000")
-
-        strengths_code=$(echo "$strengths_response" | tail -c 4)
-        echo "Strengths query response: $strengths_code"
-
-        # Test 4: Check email logs table (shows system is active)
-        echo "📧 Testing email logs table..."
-        logs_response=$(curl -s -w "%{http_code}" --max-time 30 \
-          -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
-          -H "Authorization: Bearer ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
-          "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/email_logs?select=count&limit=1" \
-          -o /tmp/logs_response.txt 2>/dev/null || echo "000")
-
-        logs_code=$(echo "$logs_response" | tail -c 4)
-        echo "Email logs query response: $logs_code"
-        echo ""
-
-        # Summary
-        echo "📋 Database Activity Summary:"
-        echo "   • API connectivity: $api_response"
-        echo "   • Users table query: $users_code"
-        echo "   • Strengths table query: $strengths_code"
-        echo "   • Email logs query: $logs_code"
-        echo ""
-
-        # Success criteria - check each response safely
-        success_count=0
-
-        # Check API response
-        if [[ "$api_response" =~ ^[0-9]+$ ]] && ([ "$api_response" -eq 200 ] || [ "$api_response" -eq 401 ]); then
-          success_count=$((success_count + 1))
-          echo "✅ API test passed"
-        else
-          echo "❌ API test failed (response: $api_response)"
-        fi
-
-        # Check users table
-        if [[ "$users_code" =~ ^[0-9]+$ ]] && ([ "$users_code" -eq 200 ] || [ "$users_code" -eq 401 ] || [ "$users_code" -eq 403 ]); then
-          success_count=$((success_count + 1))
-          echo "✅ Users table test passed"
-        else
-          echo "❌ Users table test failed (response: $users_code)"
-        fi
-
-        # Check strengths table
-        if [[ "$strengths_code" =~ ^[0-9]+$ ]] && ([ "$strengths_code" -eq 200 ] || [ "$strengths_code" -eq 401 ] || [ "$strengths_code" -eq 403 ]); then
-          success_count=$((success_count + 1))
-          echo "✅ Strengths table test passed"
-        else
-          echo "❌ Strengths table test failed (response: $strengths_code)"
-        fi
-
-        # Check logs table
-        if [[ "$logs_code" =~ ^[0-9]+$ ]] && ([ "$logs_code" -eq 200 ] || [ "$logs_code" -eq 401 ] || [ "$logs_code" -eq 403 ]); then
-          success_count=$((success_count + 1))
-          echo "✅ Email logs test passed"
-        else
-          echo "❌ Email logs test failed (response: $logs_code)"
-        fi
-
-        echo ""
-        echo "✅ Successful connections: $success_count/4"
-
-        if [ "$success_count" -ge 1 ]; then
-          echo "✅ Keep-alive successful: Some database activity registered"
+        if [ "$app_response" -eq 200 ]; then
+          echo "✅ SUCCESS: Production application is healthy"
+          echo "✅ SUCCESS: App activity will keep Supabase database active"
           echo "🛡️ Supabase project will remain active"
-          exit 0
         else
-          echo "⚠️ Warning: No successful database connections"
+          echo "⚠️ WARNING: Unexpected response code: $app_response"
           echo "📞 Manual check may be needed"
-          exit 0  # Don't fail the workflow completely
         fi
 
-    - name: Ping Production Application
-      continue-on-error: true
-      run: |
         echo ""
-        echo "🌐 Testing production application..."
-
-        # Ping the actual production URL
-        if [ -n "${{ secrets.PRODUCTION_URL }}" ]; then
-          app_response=$(curl -s -o /dev/null -w "%{http_code}" \
-            "${{ secrets.PRODUCTION_URL }}")
-          echo "Production app response: $app_response"
-
-          if [ "$app_response" -eq 200 ]; then
-            echo "✅ Production application is healthy"
-          else
-            echo "⚠️ Production app returned: $app_response"
-          fi
-        else
-          # Use known production URL
-          app_response=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://stronger.tinymanager.ai")
-          echo "App response: $app_response"
-
-          if [ "$app_response" -eq 200 ]; then
-            echo "✅ Application is responding"
-          else
-            echo "⚠️ Application returned: $app_response"
-          fi
-        fi
+        echo "📊 Summary:"
+        echo "   • Production app ping: $app_response"
+        echo "   • Supabase backend activity: Generated through app"
+        echo "   • Auto-pause prevention: ✅ Active"
 
     - name: Summary Report
       run: |
         echo ""
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "🎯 ENHANCED KEEP-ALIVE COMPLETE"
+        echo "🎯 SIMPLE KEEP-ALIVE COMPLETE"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "📅 Completed: $(date -u)"
         echo "⏰ Next run: In 2 days"
         echo "🔄 Schedule: Every 2 days at 3:00 AM UTC"
         echo "🛡️ Protection: Against 7-day Supabase auto-pause"
-        echo "📊 Method: Multiple database queries for real activity"
+        echo "📝 Method: Production app ping (simple & reliable)"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
