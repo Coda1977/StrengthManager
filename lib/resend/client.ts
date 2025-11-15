@@ -7,9 +7,9 @@ if (!process.env.RESEND_API_KEY) {
 export const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email configuration
-// Using verified domain: stronger.tinymanager.ai
+// Using verified domain: tinymanager.ai (parent domain verified in Resend)
 export const EMAIL_CONFIG = {
-  from: 'Strength Manager <noreply@stronger.tinymanager.ai>',
+  from: 'Strength Manager <noreply@tinymanager.ai>',
   replyTo: 'tinymanagerai@gmail.com',
 } as const;
 
