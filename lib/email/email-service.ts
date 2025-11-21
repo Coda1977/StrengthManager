@@ -321,6 +321,7 @@ export async function processWeeklyEmails(): Promise<{
   failed: number;
   skipped: number;
 }> {
+  // Use regular client for user-context operations, will switch to service client for cron
   const supabase = await createClient();
   let sent = 0;
   let failed = 0;
@@ -330,11 +331,16 @@ export async function processWeeklyEmails(): Promise<{
     console.log('Processing weekly emails...');
 
     // Query all active weekly_coaching subscriptions
-    const { data: activeSubs } = await supabase
+    const { data: activeSubs, error: queryError } = await supabase
       .from('email_subscriptions')
       .select('*, users(*)')
       .eq('is_active', true)
       .eq('email_type', 'weekly_coaching');
+
+    if (queryError) {
+      console.error('Error querying email subscriptions:', queryError);
+      return { sent, failed, skipped };
+    }
 
     if (!activeSubs || activeSubs.length === 0) {
       console.log('No active subscriptions found');
