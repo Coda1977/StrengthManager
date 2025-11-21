@@ -1,0 +1,41 @@
+name: Send Weekly Coaching Emails
+
+on:
+  schedule:
+    # Run every Monday at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+
+  # Allow manual triggering for testing
+  workflow_dispatch:
+
+jobs:
+  send-weekly-emails:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Weekly Email Cron Job
+        run: |
+          echo "Triggering weekly email cron job..."
+          response=$(curl -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -w "\nHTTP_CODE:%{http_code}" \
+            https://stronger.tinymanager.ai/api/cron/weekly-emails)
+
+          echo "$response"
+
+          # Extract HTTP code
+          http_code=$(echo "$response" | grep "HTTP_CODE:" | cut -d':' -f2)
+
+          # Check if successful (200-299)
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "✅ Weekly emails sent successfully! (HTTP $http_code)"
+            exit 0
+          else
+            echo "❌ Failed to send weekly emails (HTTP $http_code)"
+            exit 1
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Weekly email cron job failed. Check logs above for details."
