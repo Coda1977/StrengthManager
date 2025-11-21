@@ -96,8 +96,8 @@ export async function GET(request: NextRequest) {
           continue;
         }
 
-        // Send email
-        const result = await sendWeeklyCoachingEmail(user, weekNumber);
+        // Send email (pass service client to bypass RLS)
+        const result = await sendWeeklyCoachingEmail(user, weekNumber, supabase);
 
         if (result.success) {
           // Update subscription

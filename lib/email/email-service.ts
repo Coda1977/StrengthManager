@@ -213,13 +213,15 @@ export async function sendWelcomeEmail(
 
 /**
  * Send weekly coaching email to a user
+ * @param supabaseClient - Optional Supabase client (use service client for cron jobs)
  */
 export async function sendWeeklyCoachingEmail(
   user: EmailUser,
-  weekNumber: number
+  weekNumber: number,
+  supabaseClient?: any
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient();
+    const supabase = supabaseClient || (await createClient());
 
     // Get user's team members
     const { data: teamMembers } = await supabase
