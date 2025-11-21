@@ -18,7 +18,7 @@ export interface WeeklyEmailContent {
   personalInsight: string;
   techniqueName: string;
   techniqueContent: string;
-  teamSection: string;
+  teamSection?: string; // Optional for users without team members
   quote: string;
   quoteAuthor: string;
 }
@@ -117,14 +117,16 @@ export async function generateWeeklyEmailContent(
   weekNumber: number,
   teamSize: number,
   featuredStrength: string,
-  featuredTeamMember: string,
-  teamMemberStrengths: string[],
-  teamMemberFeaturedStrength: string,
+  featuredTeamMember: string | null = null,
+  teamMemberStrengths: string[] = [],
+  teamMemberFeaturedStrength: string | null = null,
   previousPersonalTips: string[] = [],
   previousOpeners: string[] = [],
   previousTeamMembers: string[] = [],
   userId?: string
 ): Promise<WeeklyEmailContent> {
+  const hasTeam = featuredTeamMember !== null && teamSize > 0;
+
   const prompt = `# AI Instructions - Weekly Nudge Email
 
 You are crafting personalized weekly strength insights for a manager using Strengths Manager.
@@ -133,13 +135,17 @@ You are crafting personalized weekly strength insights for a manager using Stren
 - Manager Name: ${managerName}
 - Top 5 Strengths: ${topStrengths.join(', ')}
 - Week Number: ${weekNumber} of journey
-- Team Size: ${teamSize} members
+- Team Size: ${teamSize} members${hasTeam ? `
 - This Week's Featured Strength: ${featuredStrength}
 - Featured Team Member: ${featuredTeamMember} with strengths: ${teamMemberStrengths.join(', ')}
 - Team Member's Featured Strength: ${teamMemberFeaturedStrength}
 - Previous Personal Tips (last 4 weeks): ${previousPersonalTips.join(', ') || 'None'}
 - Previous Openers Used: ${previousOpeners.join(', ') || 'None'}
-- Previous Team Members Featured: ${previousTeamMembers.join(', ') || 'None'}
+- Previous Team Members Featured: ${previousTeamMembers.join(', ') || 'None'}` : `
+- This Week's Featured Strength: ${featuredStrength}
+- NO TEAM MEMBERS YET: User hasn't added team members yet
+- Previous Personal Tips (last 4 weeks): ${previousPersonalTips.join(', ') || 'None'}
+- Previous Openers Used: ${previousOpeners.join(', ') || 'None'}`}
 
 ## TECHNICAL REQUIREMENTS
 - Subject line: Maximum 45 characters
@@ -189,15 +195,17 @@ Must pass the "Monday Morning Test": Can they do this TODAY?
 
 IMPORTANT: Do not start technique content with the technique name or strength name again - go straight to the action.
 
-### 6. TEAM SECTION (40-55 words)
+${hasTeam ? `### 6. TEAM SECTION (40-55 words)
 **FORMAT:** "This week: ${featuredTeamMember}'s ${teamMemberFeaturedStrength} needs [specific need]. Instead of [common mistake], try [better approach]. Your action: [one specific thing to do this week]."
 
 **RULES:**
 - Use person's actual name
 - Focus on ONE clear need
-- Contrast common mistake vs better approach  
+- Contrast common mistake vs better approach
 - End with specific manager action
-- Keep conversational and direct
+- Keep conversational and direct` : `### 6. TEAM SECTION - SKIP THIS
+**User has no team members yet - DO NOT generate a team section.**
+This field should be omitted from the JSON response.`}
 
 ### 7. QUOTE SELECTION
 Rotate sources by week:
@@ -213,8 +221,8 @@ Generate the email content in JSON format with these exact fields:
   "header": "string",
   "personalInsight": "string (45-60 words)",
   "techniqueName": "string (memorable name)",
-  "techniqueContent": "string (60-80 words)",
-  "teamSection": "string (50-65 words)",
+  "techniqueContent": "string (60-80 words)",${hasTeam ? `
+  "teamSection": "string (50-65 words)",` : ''}
   "quote": "string",
   "quoteAuthor": "string"
 }
@@ -251,7 +259,7 @@ Return ONLY valid JSON, no other text.`;
 
     const parsed = JSON.parse(content.text);
 
-    // Validate required fields
+    // Validate required fields (teamSection is optional for users without team)
     const requiredFields = [
       'subjectLine',
       'preHeader',
@@ -259,15 +267,19 @@ Return ONLY valid JSON, no other text.`;
       'personalInsight',
       'techniqueName',
       'techniqueContent',
-      'teamSection',
       'quote',
       'quoteAuthor',
     ];
-    
+
     for (const field of requiredFields) {
       if (!parsed[field] || typeof parsed[field] !== 'string') {
         throw new Error(`Missing or invalid field: ${field}`);
       }
+    }
+
+    // Validate teamSection only if user has team members
+    if (hasTeam && (!parsed.teamSection || typeof parsed.teamSection !== 'string')) {
+      throw new Error('Missing or invalid field: teamSection (required when user has team members)');
     }
 
     // Validate strength consistency

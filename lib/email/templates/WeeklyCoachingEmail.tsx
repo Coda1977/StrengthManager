@@ -20,9 +20,9 @@ interface WeeklyCoachingEmailProps {
   personalInsight: string;
   techniqueName: string;
   techniqueContent: string;
-  teamMemberName: string;
-  teamMemberStrength: string;
-  teamSection: string;
+  teamMemberName?: string;
+  teamMemberStrength?: string;
+  teamSection?: string;
   quote: string;
   quoteAuthor: string;
   dashboardUrl?: string;
@@ -70,13 +70,15 @@ export const WeeklyCoachingEmail = ({
             </div>
           </Section>
 
-          {/* Team Section */}
-          <Section style={secondarySection}>
-            <div style={miniCard}>
-              <Text style={miniCardLabel}>TEAM INSIGHT</Text>
-              <Text style={miniCardText} dangerouslySetInnerHTML={{ __html: teamSection }} />
-            </div>
-          </Section>
+          {/* Team Section - Conditional */}
+          {teamSection && (
+            <Section style={secondarySection}>
+              <div style={miniCard}>
+                <Text style={miniCardLabel}>TEAM INSIGHT</Text>
+                <Text style={miniCardText} dangerouslySetInnerHTML={{ __html: teamSection }} />
+              </div>
+            </Section>
+          )}
 
           {/* Quote Section */}
           <Section style={quoteSection}>

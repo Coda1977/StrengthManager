@@ -229,32 +229,49 @@ export async function sendWeeklyCoachingEmail(
       .select('*')
       .eq('user_id', user.id);
 
-    if (!teamMembers || teamMembers.length === 0) {
-      console.log(`Skipping weekly email for ${user.email} - no team members`);
-      return { success: false, error: 'No team members' };
-    }
-
-    // Select featured team member and strength for this week
-    const featuredMemberIndex = (weekNumber - 1) % teamMembers.length;
-    const featuredMember = teamMembers[featuredMemberIndex] as EmailTeamMember;
-    const memberStrengths = featuredMember.top_5_strengths || [];
+    const hasTeamMembers = teamMembers && teamMembers.length > 0;
     const featuredStrength = user.top_5_strengths[(weekNumber - 1) % user.top_5_strengths.length] || 'Strategic';
-    const teamMemberFeaturedStrength = memberStrengths[0] || 'Focus';
 
     // Generate AI-powered weekly email content
-    const weeklyContent = await generateWeeklyEmailContent(
-      user.name.split(' ')[0] || user.name,
-      user.top_5_strengths,
-      weekNumber,
-      teamMembers.length,
-      featuredStrength,
-      featuredMember.name,
-      memberStrengths,
-      teamMemberFeaturedStrength,
-      [], // previousPersonalTips - could track from email logs
-      [], // previousOpeners - could track from email logs
-      [] // previousTeamMembers - could track from email logs
-    );
+    let weeklyContent;
+
+    if (hasTeamMembers) {
+      // User has team members - full weekly email
+      const featuredMemberIndex = (weekNumber - 1) % teamMembers.length;
+      const featuredMember = teamMembers[featuredMemberIndex] as EmailTeamMember;
+      const memberStrengths = featuredMember.top_5_strengths || [];
+      const teamMemberFeaturedStrength = memberStrengths[0] || 'Focus';
+
+      weeklyContent = await generateWeeklyEmailContent(
+        user.name.split(' ')[0] || user.name,
+        user.top_5_strengths,
+        weekNumber,
+        teamMembers.length,
+        featuredStrength,
+        featuredMember.name,
+        memberStrengths,
+        teamMemberFeaturedStrength,
+        [], // previousPersonalTips - could track from email logs
+        [], // previousOpeners - could track from email logs
+        [] // previousTeamMembers - could track from email logs
+      );
+    } else {
+      // User has no team members - personal strengths focus only
+      console.log(`Sending personal-only email to ${user.email} - no team members yet`);
+      weeklyContent = await generateWeeklyEmailContent(
+        user.name.split(' ')[0] || user.name,
+        user.top_5_strengths,
+        weekNumber,
+        0, // No team members
+        featuredStrength,
+        null, // No featured team member
+        [], // No team member strengths
+        null, // No team member featured strength
+        [], // previousPersonalTips - could track from email logs
+        [], // previousOpeners - could track from email logs
+        [] // previousTeamMembers - could track from email logs
+      );
+    }
 
     // Generate unsubscribe token
     const unsubscribeToken = await getOrCreateUnsubscribeToken(user.id, 'weekly_coaching');
@@ -272,9 +289,7 @@ export async function sendWeeklyCoachingEmail(
         personalInsight: weeklyContent.personalInsight,
         techniqueName: weeklyContent.techniqueName,
         techniqueContent: weeklyContent.techniqueContent,
-        teamMemberName: featuredMember.name,
-        teamMemberStrength: teamMemberFeaturedStrength,
-        teamSection: weeklyContent.teamSection,
+        teamSection: weeklyContent.teamSection, // Will be undefined for users without team
         quote: weeklyContent.quote,
         quoteAuthor: weeklyContent.quoteAuthor,
         dashboardUrl,
