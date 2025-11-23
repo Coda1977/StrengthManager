@@ -59,7 +59,7 @@ Focus on:
 - One specific action to maximize their collaboration
 - Practical, immediately applicable advice
 
-Provide a concise, actionable insight.`;
+IMPORTANT: Respond with ONLY plain text - no markdown formatting, no headers, no bold text, no special characters. Just 2-3 clear, conversational sentences that provide a concise, actionable insight.`;
 
     // Generate insight using Claude
     const response = await anthropic.messages.create({

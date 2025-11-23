@@ -47,7 +47,7 @@ Focus on:
 - Practical collaboration strategies
 - Specific actions the manager can take this week
 
-Provide a concise, actionable insight that helps the manager lead more effectively.`;
+IMPORTANT: Respond with ONLY plain text - no markdown formatting, no headers, no bold text, no special characters. Just 2-3 clear, conversational sentences that provide a concise, actionable insight to help the manager lead more effectively.`;
 
     // Generate insight using Claude
     const response = await anthropic.messages.create({
