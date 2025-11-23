@@ -76,6 +76,21 @@ Provide a concise, actionable insight that helps the manager lead more effective
     return NextResponse.json({ insight });
   } catch (error) {
     console.error('Error generating team insight:', error);
+    
+    // Log detailed error information for debugging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
+    // Check if it's an API key issue
+    if (error instanceof Error && error.message.includes('401')) {
+      return NextResponse.json(
+        { error: 'API authentication failed. Please check your ANTHROPIC_API_KEY.' }, 
+        { status: 401 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to generate insight' }, 
       { status: 500 }

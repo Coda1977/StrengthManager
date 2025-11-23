@@ -25,8 +25,9 @@ const DashboardClient = dynamic(() => import('./DashboardClient'), {
   ),
 });
 
-// Enable ISR with 60 second revalidation for better performance
-export const revalidate = 60;
+// Disable ISR caching to ensure fresh team member data on every load
+// This fixes the issue where team member updates were not persisting
+// export const revalidate = 60;
 
 export default async function DashboardPage() {
   const supabase = await createClient();
