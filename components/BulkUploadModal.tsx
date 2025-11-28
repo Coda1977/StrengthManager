@@ -51,7 +51,14 @@ export default function BulkUploadModal({ onClose, onUpload, allStrengths }: Bul
   const processMembers = (rawMembers: any[]) => {
     const members = rawMembers.map((row: any) => {
       // Flexible header matching
-      const name = row.Name || row.name || row['Full Name'] || row['Team Member'] || '';
+      let name = row.Name || row.name || row['Full Name'] || row['Team Member'] || '';
+
+      // Handle split names (First Name, Last Name)
+      const firstName = row['First Name'] || row['First name'] || row['first name'];
+      const lastName = row['Last Name'] || row['Last name'] || row['last name'];
+      if (firstName && lastName) {
+        name = `${firstName} ${lastName}`;
+      }
 
       // Handle different strength formats
       let strengths: string[] = [];
@@ -59,13 +66,20 @@ export default function BulkUploadModal({ onClose, onUpload, allStrengths }: Bul
       // Check for "Strengths" column (comma separated)
       const strengthsStr = row.Strengths || row.strengths || row.Top5 || row.top5 || row['Top 5'] || '';
       if (strengthsStr && typeof strengthsStr === 'string') {
-        strengths = strengthsStr.split(/[,;]/).map((s: string) => s.trim()).filter(Boolean);
-      } else {
-        // Check for Strength 1, Strength 2, etc.
-        for (let i = 1; i <= 5; i++) {
-          const s = row[`Strength ${i}`] || row[`strength ${i}`] || row[`Strength${i}`] || row[`strength${i}`];
-          if (s) strengths.push(s.trim());
-        }
+        const split = strengthsStr.split(/[,;]/).map((s: string) => s.trim()).filter(Boolean);
+        strengths = [...strengths, ...split];
+      }
+
+      // Check for Strength 1, Strength 2, etc.
+      for (let i = 1; i <= 5; i++) {
+        const s = row[`Strength ${i}`] || row[`strength ${i}`] || row[`Strength${i}`] || row[`strength${i}`];
+        if (s) strengths.push(s.trim());
+      }
+
+      // Check for Theme 1, Theme 2, etc. (up to 34, but usually top 5)
+      for (let i = 1; i <= 34; i++) {
+        const theme = row[`Theme ${i}`] || row[`theme ${i}`] || row[`Theme${i}`];
+        if (theme) strengths.push(theme.trim());
       }
 
       // If no strengths found yet, try to find them in the row values if it's a simple list
@@ -113,7 +127,22 @@ export default function BulkUploadModal({ onClose, onUpload, allStrengths }: Bul
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: 'array' });
           const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+          // Use header:1 to get array of arrays, which is easier to scan for the real header row
+          const rawData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as any[][];
+
+          // Find the header row index
+          let headerRowIndex = 0;
+          for (let i = 0; i < Math.min(rawData.length, 10); i++) {
+            const row = rawData[i].map(v => String(v).toLowerCase());
+            if (row.includes('name') || row.includes('first name') || row.includes('theme 1')) {
+              headerRowIndex = i;
+              break;
+            }
+          }
+
+          // Re-parse starting from the header row
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet, { range: headerRowIndex });
           processMembers(jsonData);
         } catch (error) {
           alert('Error parsing Excel file: ' + (error as Error).message);
