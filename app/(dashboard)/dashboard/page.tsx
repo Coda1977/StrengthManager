@@ -25,14 +25,14 @@ const DashboardClient = dynamic(() => import('./DashboardClient'), {
   ),
 });
 
-// Enable ISR with 60 second revalidation for better performance
-export const revalidate = 60;
+// Force dynamic rendering to ensure fresh data for user dashboard
+export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  
+
   const { data: { user } } = await supabase.auth.getUser();
-  
+
   if (!user) {
     redirect('/login');
   }
@@ -65,7 +65,7 @@ export default async function DashboardPage() {
   return (
     <>
       <Navigation />
-      <DashboardClient 
+      <DashboardClient
         initialUserData={{
           id: userData.id,
           name: userData.name,
