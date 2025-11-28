@@ -1,6 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { anthropic, CLAUDE_MODEL } from '@/lib/anthropic/client';
+import { logAIUsage, extractTokenCounts } from '@/lib/utils/ai-logger';
 import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
@@ -79,6 +80,21 @@ export async function POST(request: NextRequest) {
         'anthropic-beta': 'pdfs-2024-09-25'
       }
     });
+
+    // Log AI usage
+    try {
+      const { inputTokens, outputTokens } = extractTokenCounts(response);
+      await logAIUsage({
+        requestType: 'team_extraction',
+        model: CLAUDE_MODEL,
+        inputTokens,
+        outputTokens,
+        userId: user.id,
+      });
+    } catch (logError) {
+      console.error('Error logging AI usage:', logError);
+      // Don't fail the request if logging fails
+    }
 
     const responseText = response.content[0].type === 'text' ? response.content[0].text : '';
 

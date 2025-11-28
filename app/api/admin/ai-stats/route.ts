@@ -116,12 +116,6 @@ export async function GET(request: NextRequest) {
       dailyAverage = totalCost / totalDays;
     }
 
-    const costProjection = {
-      daily: dailyAverage,
-      weekly: dailyAverage * 7,
-      monthly: dailyAverage * 30,
-    };
-
     const response: AIStatsResponse = {
       totalRequests,
       totalCost: Number(totalCost.toFixed(6)),

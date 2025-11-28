@@ -42,15 +42,15 @@ export async function GET() {
   try {
     const startTime = Date.now();
     const supabase = await createClient();
-    
+
     // Simple query to test connection
     const { error } = await supabase
       .from('users')
       .select('id')
       .limit(1);
-    
+
     const responseTime = Date.now() - startTime;
-    
+
     if (error) {
       healthCheck.database = {
         status: 'down',
@@ -74,8 +74,6 @@ export async function GET() {
 
   // Check Anthropic API
   try {
-    const supabase = await createClient();
-    
     // Check if API key is configured
     if (!process.env.ANTHROPIC_API_KEY) {
       healthCheck.anthropic = {
@@ -83,33 +81,18 @@ export async function GET() {
         message: 'API key not configured',
       };
     } else {
-      // Check last successful call from logs
-      const { data: lastLog, error } = await supabase
-        .from('ai_usage_logs')
-        .select('created_at')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle() as { data: { created_at: string } | null; error: any };
-      
-      if (error) {
-        healthCheck.anthropic = {
-          status: 'degraded',
-          message: 'Unable to check logs',
-        };
-      } else if (lastLog) {
-        const lastCallTime = new Date(lastLog.created_at);
-        const hoursSinceLastCall = (Date.now() - lastCallTime.getTime()) / (1000 * 60 * 60);
-        
-        healthCheck.anthropic = {
-          status: hoursSinceLastCall < 24 ? 'healthy' : 'degraded',
-          lastCall: lastLog.created_at,
-          message: hoursSinceLastCall < 24 ? 'Recent activity' : 'No recent activity',
-        };
-      } else {
-        // No logs yet, but API key is configured
+      // Active check: Try to list models (lightweight call)
+      try {
+        await anthropic.models.list({ limit: 1 });
         healthCheck.anthropic = {
           status: 'healthy',
-          message: 'Configured (no usage yet)',
+          message: 'Connected (Active check passed)',
+        };
+      } catch (apiError) {
+        console.error('Anthropic health check failed:', apiError);
+        healthCheck.anthropic = {
+          status: 'down',
+          message: apiError instanceof Error ? apiError.message : 'API connection failed',
         };
       }
     }
@@ -123,7 +106,7 @@ export async function GET() {
   // Check Resend API
   try {
     const configured = !!process.env.RESEND_API_KEY;
-    
+
     if (!configured) {
       healthCheck.resend = {
         status: 'down',

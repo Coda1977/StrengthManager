@@ -3,12 +3,13 @@ import { createClient } from '@/lib/supabase/server';
 /**
  * Request types for AI usage tracking
  */
-export type AIRequestType = 
-  | 'chat' 
-  | 'email_content' 
-  | 'insights' 
-  | 'title_generation' 
-  | 'synergy_tips';
+export type AIRequestType =
+  | 'chat'
+  | 'email_content'
+  | 'insights'
+  | 'title_generation'
+  | 'synergy_tips'
+  | 'team_extraction';
 
 /**
  * Parameters for logging AI usage
@@ -96,7 +97,7 @@ export function extractTokenCounts(response: any): {
       outputTokens: 0,
     };
   }
-  
+
   return {
     inputTokens: response.usage?.input_tokens || 0,
     outputTokens: response.usage?.output_tokens || 0,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import StatCard from './components/StatCard';
 import ChartCard from './components/ChartCard';
 import DataTable from './components/DataTable';
@@ -26,6 +26,7 @@ const REQUEST_TYPE_LABELS: Record<string, string> = {
   insights: 'Insights',
   title_generation: 'Title Generation',
   synergy_tips: 'Synergy Tips',
+  team_extraction: 'Team Extraction',
 };
 
 export default function AIUsageAnalytics() {
@@ -34,7 +35,7 @@ export default function AIUsageAnalytics() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -52,11 +53,11 @@ export default function AIUsageAnalytics() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [period]);
 
   useEffect(() => {
     fetchStats();
-  }, [period]);
+  }, [fetchStats]);
 
   const formatCurrency = (value: number) => {
     return `$${value.toFixed(2)}`;
