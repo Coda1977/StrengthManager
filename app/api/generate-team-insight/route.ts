@@ -47,7 +47,7 @@ Focus on:
 - Practical collaboration strategies
 - Specific actions the manager can take this week
 
-Provide a concise, actionable insight that helps the manager lead more effectively.`;
+IMPORTANT: Respond with ONLY plain text - no markdown formatting, no headers, no bold text, no special characters. Just 2-3 clear, conversational sentences that provide a concise, actionable insight to help the manager lead more effectively.`;
 
     // Generate insight using Claude
     const response = await anthropic.messages.create({
@@ -76,6 +76,21 @@ Provide a concise, actionable insight that helps the manager lead more effective
     return NextResponse.json({ insight });
   } catch (error) {
     console.error('Error generating team insight:', error);
+    
+    // Log detailed error information for debugging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
+    // Check if it's an API key issue
+    if (error instanceof Error && error.message.includes('401')) {
+      return NextResponse.json(
+        { error: 'API authentication failed. Please check your ANTHROPIC_API_KEY.' }, 
+        { status: 401 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to generate insight' }, 
       { status: 500 }

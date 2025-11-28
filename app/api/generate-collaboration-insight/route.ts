@@ -59,7 +59,7 @@ Focus on:
 - One specific action to maximize their collaboration
 - Practical, immediately applicable advice
 
-Provide a concise, actionable insight.`;
+IMPORTANT: Respond with ONLY plain text - no markdown formatting, no headers, no bold text, no special characters. Just 2-3 clear, conversational sentences that provide a concise, actionable insight.`;
 
     // Generate insight using Claude
     const response = await anthropic.messages.create({
@@ -89,6 +89,21 @@ Provide a concise, actionable insight.`;
     return NextResponse.json({ insight });
   } catch (error) {
     console.error('Error generating collaboration insight:', error);
+    
+    // Log detailed error information for debugging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
+    // Check if it's an API key issue
+    if (error instanceof Error && error.message.includes('401')) {
+      return NextResponse.json(
+        { error: 'API authentication failed. Please check your ANTHROPIC_API_KEY.' }, 
+        { status: 401 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to generate collaboration insight' }, 
       { status: 500 }

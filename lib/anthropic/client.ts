@@ -5,7 +5,7 @@ export const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-export const CLAUDE_MODEL = 'claude-3-5-sonnet-20241022';
+export const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929';
 
 // System prompts for different chat modes
 export const SYSTEM_PROMPTS = {
