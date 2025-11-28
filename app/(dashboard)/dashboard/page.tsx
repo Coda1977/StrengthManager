@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import Navigation from '@/components/Navigation';
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 
 // Dynamic import for large client component with loading state
-const DashboardClient = dynamic(() => import('./DashboardClient'), {
+const DashboardClient = nextDynamic(() => import('./DashboardClient'), {
   loading: () => (
     <div style={{
       minHeight: '100vh',
